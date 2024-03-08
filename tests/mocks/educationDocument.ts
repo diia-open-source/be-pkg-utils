@@ -1,0 +1,55 @@
+import { randomUUID } from 'crypto'
+
+import { DocStatus, EducationDocument, EducationDocumentType } from '@diia-inhouse/types'
+
+export const getValidEducationDocument = (): EducationDocument => {
+    const documentNumber = randomUUID()
+
+    return {
+        id: documentNumber,
+        docStatus: DocStatus.Ok,
+        docNumber: documentNumber,
+        number: documentNumber,
+        series: 'EE',
+        subtype: EducationDocumentType.DiplomaOfDoctorOfPhilosophy,
+        subtypeName: 'PersonDocumentTypeName',
+        subtypeNameEn: 'PersonDocumentTypeNameEn',
+        accreditationInstitutionName: 'Accreditation Institution Name',
+        accreditationInstitutionNameEn: 'Accreditation Institution Name En',
+        additionalAwardInfo: 'Additional Award Info',
+        additionalAwardInfoEn: 'Additional Award Info En',
+        beginningUniversityName: 'Beginning University Name',
+        beginningUniversityNameEn: 'Beginning University Name En',
+        beginningUniversityYear: '2015',
+        birthDate: new Date('1995-01-23'),
+        bossFullName: 'FullName',
+        bossFullNameEn: 'FullNameEn',
+        bossPositionTitle: 'PositionTitle',
+        bossPositionTitleEn: 'PositionTitleEn',
+        issueDate: new Date('2021-06-11'),
+        educationEndDate: new Date('2021-06-01'),
+        educationUniversityName: 'Education University Name',
+        educationUniversityNameEn: 'Education University Name En',
+        lastName: 'FamilyName',
+        lastNameEn: 'FamilyNameEn',
+        firstName: 'GivenName',
+        firstNameEn: 'GivenNameEn',
+        isDuplicate: false,
+        issuedByUniversityName: 'Issued by University Name',
+        issuedByUniversityNameEn: 'Issued by University Name En',
+        middleName: 'PatronymicName',
+        middleNameEn: 'PatronymicNameEn',
+        professionText: 'ProfessionText',
+        qualificationName: 'QualificationName',
+        qualificationNameEn: 'QualificationNameEn',
+        scientificCouncilUniversityName: 'ScientificCouncilUniversityName',
+        scientificCouncilUniversityNameEn: 'ScientificCouncilUniversityNameEn',
+        scientificDegreeDate: new Date('2021-06-01'),
+        specialityName: 'SpecialityName',
+        specialityNameEn: 'SpecialityNameEn',
+        specializationName: 'SpecializationName',
+        specializationNameEn: 'SpecializationNameEn',
+        studyProgramName: 'StudyProgramName',
+        studyProgramNameEn: 'StudyProgramNameEn',
+    }
+}

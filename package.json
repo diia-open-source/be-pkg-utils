@@ -1,0 +1,95 @@
+{
+    "name": "@diia-inhouse/utils",
+    "version": "2.36.0",
+    "description": "Generic utils",
+    "main": "dist/index.js",
+    "types": "dist/types/index.d.ts",
+    "repository": "https://github.com/diia-open-source/be-pkg-utils.git",
+    "author": "Diia",
+    "license": "SEE LICENSE IN LICENSE.md",
+    "files": [
+        "dist"
+    ],
+    "engines": {
+        "node": ">=18"
+    },
+    "scripts": {
+        "prebuild": "rimraf dist",
+        "build": "tsc",
+        "semantic-release": "semantic-release",
+        "start": "npm run build && node dist/index.js",
+        "lint": "eslint --ext .ts . && prettier --check .",
+        "lint-fix": "eslint '*/**/*.{js,ts}' --fix && prettier --write .",
+        "lint:lockfile": "lockfile-lint --path package-lock.json --allowed-hosts registry.npmjs.org --validate-https",
+        "prepare": "npm run build",
+        "test": "jest",
+        "test:unit": "npm run test --selectProjects unit --",
+        "test:coverage": "npm run test --selectProjects unit --coverage",
+        "find-circulars": "madge --circular --extensions ts ./"
+    },
+    "dependencies": {
+        "@types/luxon": "3.4.2",
+        "bson": "6.2.0",
+        "compare-versions": "6.1.0",
+        "fast-levenshtein": "3.0.0",
+        "lodash": "4.17.21",
+        "luxon": "3.4.4",
+        "moment": "2.30.1"
+    },
+    "peerDependencies": {
+        "@diia-inhouse/errors": ">=1.4.1",
+        "@diia-inhouse/types": ">=4.4.1",
+        "@diia-inhouse/validators": ">=1.5.0"
+    },
+    "devDependencies": {
+        "@diia-inhouse/configs": "^1.26.3",
+        "@diia-inhouse/errors": "^1.6.1",
+        "@diia-inhouse/eslint-config": "^3.4.0",
+        "@diia-inhouse/test": "^5.1.2",
+        "@diia-inhouse/types": "^5.1.0",
+        "@diia-inhouse/validators": "^1.12.1",
+        "@types/fast-levenshtein": "0.0.4",
+        "@types/lodash": "4.14.202",
+        "@types/node": "20.11.17",
+        "@typescript-eslint/typescript-estree": "7.0.1",
+        "lockfile-lint": "4.13.1",
+        "madge": "6.1.0",
+        "protobufjs": "7.2.6",
+        "rimraf": "5.0.5"
+    },
+    "release": {
+        "extends": "@diia-inhouse/configs/dist/semantic-release/package",
+        "branches": [
+            "main"
+        ]
+    },
+    "commitlint": {
+        "extends": "@diia-inhouse/configs/dist/commitlint"
+    },
+    "eslintConfig": {
+        "extends": "@diia-inhouse/eslint-config",
+        "rules": {
+            "@typescript-eslint/no-explicit-any": "warn"
+        },
+        "overrides": [
+            {
+                "files": [
+                    "*.ts"
+                ],
+                "parserOptions": {
+                    "project": [
+                        "./tsconfig.json",
+                        "./tests/tsconfig.json"
+                    ]
+                }
+            }
+        ]
+    },
+    "jest": {
+        "preset": "@diia-inhouse/configs/dist/jest"
+    },
+    "prettier": "@diia-inhouse/eslint-config/prettier",
+    "madge": {
+        "tsConfig": "./tsconfig.json"
+    }
+}
