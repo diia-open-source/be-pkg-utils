@@ -4,7 +4,7 @@ export class TypeUtils {
     }
 
     static isArray(value: any): boolean {
-        return value && typeof value === 'object' && value.constructor === Array
+        return Array.isArray(value)
     }
 
     static isBuffer(value: any): boolean {
