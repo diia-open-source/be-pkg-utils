@@ -26,7 +26,7 @@ This repository contains the package with generic utils functionality.
 Example:
 
 ```
-git clone https://github.com/diia-open-source/pkg-utils.git
+git clone https://github.com/diia-open-source/be-pkg-utils.git pkg-utils
 ```
 
 ---
