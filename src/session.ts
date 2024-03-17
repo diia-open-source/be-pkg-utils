@@ -3,15 +3,17 @@ import { DiiaOfficeStatus, EResidentSession, ProfileFeature, UserFeatures, UserS
 export function profileFeaturesToList(features: UserFeatures): ProfileFeature[] {
     const featuresList: ProfileFeature[] = []
 
-    Object.entries(features).forEach(([key, value]: [string, unknown]) => value && featuresList.push(<ProfileFeature>key))
+    Object.entries(features).forEach(([key, value]: [string, unknown]) => {
+      if (!value) return
+      if (feature !== ProfileFeature.office) {
+        featuresList.push(true)
+        return
+      }
 
-    return featuresList.filter((feature) => {
-        if (feature !== ProfileFeature.office) {
-            return true
-        }
+      featuresList.push(value?.status === DiiaOfficeStatus.ACTIVE)
+    });
 
-        return features?.[feature]?.status === DiiaOfficeStatus.ACTIVE
-    })
+    return featuresList
 }
 
 export function extractProfileFeatures(session: UserSession | EResidentSession): ProfileFeature[] {
