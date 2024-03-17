@@ -184,25 +184,7 @@ export class ApplicationUtils {
     }
 
     static capitalizeName(name: string): string {
-        const foundDelimiters: string[] = this.nameDelimiters.filter((delimiter: string) => {
-            const regex = new RegExp(delimiter)
-
-            return regex.test(name)
-        })
-
-        let resultName: string = name?.toLowerCase()
-        if (foundDelimiters.length) {
-            foundDelimiters.forEach((foundDelimiter: string) => {
-                resultName = resultName
-                    .split(foundDelimiter)
-                    .map((partName: string) => ApplicationUtils.capitalizeFirstLetter(partName))
-                    .join(foundDelimiter)
-            })
-
-            return resultName
-        }
-
-        return ApplicationUtils.capitalizeFirstLetter(resultName)
+        return name.split(/([- ])/g).map(ApplicationUtils.capitalizeFirstLetter).join('')
     }
 
     static capitalizeFirstLetter(str: string): string {
