@@ -512,14 +512,7 @@ export class ApplicationUtils {
     }
 
     private static mod97(string: string): number {
-        let checksum: string | number = string.slice(0, 2)
-        let fragment: string
-        for (let offset = 2; offset < string.length; offset += 7) {
-            fragment = String(checksum) + string.substring(offset, offset + 7)
-            checksum = parseInt(fragment, 10) % 97
-        }
-
-        return <number>checksum
+        return Number(BigInt(string) % 97n)
     }
 
     private static toApiError(err: Error & { code?: number; data?: ErrorData; type?: ErrorType }): ApiError {

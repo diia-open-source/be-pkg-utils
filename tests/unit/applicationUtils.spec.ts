@@ -883,4 +883,32 @@ describe('ApplicationUtils', () => {
             expect(ApplicationUtils.sanitizeString(input)).toEqual(result)
         })
     })
+
+    describe('mod97', () => {
+        // examples from https://uk.wikipedia.org/wiki/International_Bank_Account_Number
+        function locNorm(t) {
+          t = t.replace(/\s/g, '')
+          t = t.slice(4) + t.slice(0, 4)
+          t = t.replace(/[A-Z]/g, (letter)=>letter.charCodeAt(0)-55)
+          return t
+        }
+        const codeList = [
+          'GB29 NWBK 6016 1331 9268 19',
+          'DE89 3704 0044 0532 0130 00',
+          'NL91 ABNA 0417 1643 00',
+          'UA85 399622 0000 0002 6001 2335 661',
+          'FI21 1234 5600 0007 85',
+          'SE45 5000 0000 0583 9825 7466'
+        ]
+        const pairList = codeList.map((t)=>{
+          return [locNorm(t), 1]
+        });
+        // example from https://zakon.help/files/article/10549/Правила%20формування%20IBAN.pdf page 7
+        pairList.push(
+          ["3996220004149005233566882301000", 5]
+        )
+        it.each(pairList)('should sanitize %s to %s', (input, result) => {
+            expect(ApplicationUtils.sanitizeString(input)).toEqual(result)
+        })
+    })
 })
