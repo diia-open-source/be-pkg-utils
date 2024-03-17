@@ -2,11 +2,11 @@
 import { ObjectId } from 'bson'
 import { cloneDeep, isObject } from 'lodash'
 
-import { ArrayRule, ObjectRule, ValidationSchema } from '@diia-inhouse/validators'
+import { ArrayRule, ObjectRule, ValidationSchema, ValidationRule } from '@diia-inhouse/validators'
 
 import { TypeUtils } from './typeUtils'
 
-function convertPrimitiveDueRule(value: unknown, rule: any): any {
+function convertPrimitiveDueRule(value: unknown, rule: ValidationRule): any {
     if (rule.convert === false || value === null) {
         return value
     }
