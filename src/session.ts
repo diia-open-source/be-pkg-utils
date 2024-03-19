@@ -1,16 +1,15 @@
 import { DiiaOfficeStatus, EResidentSession, ProfileFeature, UserFeatures, UserSession } from '@diia-inhouse/types'
 
 export function profileFeaturesToList(features: UserFeatures): ProfileFeature[] {
-    const featuresList: ProfileFeature[] = Object
-        .keys(features)
-        .filter(key => features[key])
-        .map(key => <ProfileFeature>key);
-
-    return featuresList.filter(feature => {
-        if (feature !== ProfileFeature.office) return true;
-
-        return features?.[feature]?.status === DiiaOfficeStatus.ACTIVE;
-    });
+    return Object
+        .entries(features)
+        .reduce((acc: ProfileFeature[], [feature, value]: [string, any]) => {
+            if (!value) return acc;
+            if (feature !== ProfileFeature.office || value.status === DiiaOfficeStatus.ACTIVE) {
+                acc.push(feature);
+            }
+            return acc;
+        }, []);
 }
 
 export function extractProfileFeatures(session: UserSession | EResidentSession): ProfileFeature[] {
