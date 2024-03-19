@@ -149,16 +149,14 @@ export class ApplicationUtils {
             return false
         }
 
-        const [a, b, c, d, e, f, g, h, i, j]: number[] = itn.split('').map((item: string) => parseInt(item, 10))
+        const ITN_POLY = [-1, 5, 7, 9, 4, 6, 10, 5, 7]
 
-        const checkSum: number = a * -1 + b * 5 + c * 7 + d * 9 + e * 4 + f * 6 + g * 10 + h * 5 + i * 7
+        const digits = [...itn].map(x => +x)
+        const checksum = ITN_POLY.reduce((a, x, i) => a + x * digits[i], 0)
+        const controlDigit = (checksum - 11 * Math.floor(checksum / 11)) % 10
+        const last = digits.at(-1)
 
-        let controlNumber = checkSum - 11 * Math.floor(checkSum / 11)
-        if (controlNumber >= 10) {
-            controlNumber = parseInt(controlNumber.toString().split('')?.pop() || '', 10)
-        }
-
-        return j === controlNumber
+        return last === controlDigit
     }
 
     static getBirthDayFromItn(itn: string): string {
