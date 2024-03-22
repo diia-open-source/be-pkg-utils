@@ -1,13 +1,15 @@
+import { isObject } from 'lodash'
+
 export class TypeUtils {
     static isObject(value: any): boolean {
-        return value && typeof value === 'object' && value.constructor === Object
+        return isObject(value)
     }
 
     static isArray(value: any): boolean {
-        return value && typeof value === 'object' && value.constructor === Array
+        return Array.isArray(value)
     }
 
     static isBuffer(value: any): boolean {
-        return value && (value.type === 'Buffer' || Buffer.isBuffer(value))
+        return Buffer.isBuffer(value)
     }
 }
