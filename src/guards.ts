@@ -67,10 +67,6 @@ export class Guards {
     }
 
     static isSettledError(value: PromiseSettledResult<unknown>): value is PromiseRejectedResult {
-        if (value.status === 'rejected') {
-            return true
-        }
-
-        return false
+        return value.status === 'rejected'
     }
 }
