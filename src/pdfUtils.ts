@@ -353,9 +353,9 @@ export class PdfUtils {
                         ],
                         [
                             RowType.ThreeColumns,
-                            { primaryText: eng?.rankcategory?.code },
-                            { primaryText: eng?.rankcategory?.name, secondaryText: ua?.rankcategory?.name },
-                            { primaryText: ua?.rankcategory?.value },
+                            { primaryText: eng?.rankCategory?.code },
+                            { primaryText: eng?.rankCategory?.name, secondaryText: ua?.rankCategory?.name },
+                            { primaryText: ua?.rankCategory?.value },
                         ],
                         [
                             RowType.ThreeColumns,

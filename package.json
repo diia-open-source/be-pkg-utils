@@ -55,7 +55,8 @@
         "lockfile-lint": "4.13.1",
         "madge": "6.1.0",
         "protobufjs": "7.2.6",
-        "rimraf": "5.0.5"
+        "rimraf": "5.0.5",
+        "type-fest": "^4.8.1"
     },
     "release": {
         "extends": "@diia-inhouse/configs/dist/semantic-release/package",
