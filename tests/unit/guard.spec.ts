@@ -8,7 +8,7 @@ describe('Guards', () => {
 
     describe('apiError', () => {
         it('should return false', () => {
-            const error = new Error()
+            const error = new Error('error')
 
             const result = Guards.apiError(error)
 
@@ -34,7 +34,7 @@ describe('Guards', () => {
     })
 
     it('should return true for Error instance', () => {
-        const error = new Error()
+        const error = new Error('error')
 
         const result = Guards.isError(error)
 
@@ -50,7 +50,8 @@ describe('Guards', () => {
             expect(result).toBeTruthy()
         })
         it('isUserSession should return false for undefined', () => {
-            const result = Guards.isUserSession(undefined)
+            const session = undefined
+            const result = Guards.isUserSession(session)
 
             expect(result).toBeFalsy()
         })
@@ -63,7 +64,8 @@ describe('Guards', () => {
             expect(result).toBeTruthy()
         })
         it('isAcquirerSession should return false for undefined', () => {
-            const result = Guards.isAcquirerSession(undefined)
+            const session = undefined
+            const result = Guards.isAcquirerSession(session)
 
             expect(result).toBeFalsy()
         })
@@ -76,7 +78,8 @@ describe('Guards', () => {
             expect(result).toBeTruthy()
         })
         it('isServiceEntranceSession should return false for undefined', () => {
-            const result = Guards.isServiceEntranceSession(undefined)
+            const session = undefined
+            const result = Guards.isServiceEntranceSession(session)
 
             expect(result).toBeFalsy()
         })
@@ -145,7 +148,7 @@ describe('Guards', () => {
 
     describe('isSettledError', () => {
         it('should return true if settled value is rejected', async () => {
-            const [value] = await Promise.allSettled([Promise.reject(new Error())])
+            const [value] = await Promise.allSettled([Promise.reject(new Error('error'))])
             const result = Guards.isSettledError(value)
 
             expect(result).toBeTruthy()

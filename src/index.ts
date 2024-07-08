@@ -1,6 +1,5 @@
 import { ApplicationUtils } from './applicationUtils'
 import { Asserts } from './asserts'
-import { convertParamsByRules } from './converter'
 import { Guards } from './guards'
 import { PdfUtils } from './pdfUtils'
 
@@ -9,7 +8,7 @@ const guards = Guards
 const utils = ApplicationUtils
 const pdfUtils = PdfUtils
 
-export { asserts, convertParamsByRules, guards, utils, pdfUtils }
+export { asserts, guards, utils, pdfUtils }
 
 export { TypeUtils } from './typeUtils'
 

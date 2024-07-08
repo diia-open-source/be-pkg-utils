@@ -1,10 +1,10 @@
 /* eslint-disable regexp/prefer-character-class */
 class Metaphone {
     process(word: string): string {
-        const normalizedValue = word.toUpperCase()
+        let normalizedValue = word.toUpperCase()
 
         const operations = [
-            this.modifyOperation(/Ь|’|'|`/g, ''),
+            this.modifyOperation(/['`Ь’]/g, ''),
             this.modifyOperation(/Ґ/g, 'Г'),
             this.modifyOperation(/Е|Є|ЙЕ|ІЕ|ІО/g, 'Е'),
             this.modifyOperation(/Я|ІА|ІЯ/g, 'А'),
@@ -12,11 +12,11 @@ class Metaphone {
             this.modifyOperation(/Ю/g, 'У'),
             this.modifyOperation(/ЙО/g, 'О'),
             this.modifyOperation(/У$/g, 'В'),
-            this.modifyOperation(/П(Б|Г|Д|Ж|З)/g, 'Б$1'),
-            this.modifyOperation(/С(Б|Г|Д|Ж|З)/g, 'З$1'),
-            this.modifyOperation(/Х(Б|Г|Д|Ж|З)/g, 'Г$1'),
-            this.modifyOperation(/Т(Б|Г|Д|Ж|З)/g, 'Д$1'),
-            this.modifyOperation(/Ш(Б|Г|Д|Ж|З)/g, 'Ж$1'),
+            this.modifyOperation(/П([БГДЖЗ])/g, 'Б$1'),
+            this.modifyOperation(/С([БГДЖЗ])/g, 'З$1'),
+            this.modifyOperation(/Х([БГДЖЗ])/g, 'Г$1'),
+            this.modifyOperation(/Т([БГДЖЗ])/g, 'Д$1'),
+            this.modifyOperation(/Ш([БГДЖЗ])/g, 'Ж$1'),
             this.modifyOperation(/ХВ/g, 'Ф'),
             this.modifyOperation(/(С|Ж)Ч/g, 'Щ'),
             this.modifyOperation(/(ШЧ[^Н])/, 'Щ'),
@@ -28,7 +28,11 @@ class Metaphone {
             this.modifyOperation(/(\w)\1+/g, '$1'),
         ]
 
-        return operations.reduce((acc, operation) => operation(acc), normalizedValue)
+        for (const operation of operations) {
+            normalizedValue = operation(normalizedValue)
+        }
+
+        return normalizedValue
     }
 
     private modifyOperation(pattern: RegExp, replaceValue: string): (token: string) => string {

@@ -1,4 +1,5 @@
 import { compare } from 'compare-versions'
+import { camelCase, kebabCase } from 'lodash'
 import { DateTime, ToRelativeUnit } from 'luxon'
 
 import { ApiError, BadRequestError, ErrorData, ErrorType } from '@diia-inhouse/errors'
@@ -7,15 +8,10 @@ import {
     ActionSession,
     ActionVersion,
     AppVersions,
-    BirthCertificate,
-    DocumentType,
-    DocumentTypeCamelCase,
-    ForeignPassport,
     Gender,
     HashedFile,
     HashedFileWithSignature,
     HttpStatusCode,
-    InternalPassport,
     PlatformType,
     SessionType,
     SignedItem,
@@ -26,61 +22,14 @@ import {
 } from '@diia-inhouse/types'
 
 export class ApplicationUtils {
-    static documentTypeToCamelCase: Record<DocumentType, DocumentTypeCamelCase> = {
-        [DocumentType.DriverLicense]: DocumentTypeCamelCase.driverLicense,
-        [DocumentType.VehicleLicense]: DocumentTypeCamelCase.vehicleLicense,
-        [DocumentType.VehicleInsurance]: DocumentTypeCamelCase.vehicleLicense,
-        [DocumentType.StudentIdCard]: DocumentTypeCamelCase.studentCard,
-        [DocumentType.InternalPassport]: DocumentTypeCamelCase.idCard,
-        [DocumentType.ForeignPassport]: DocumentTypeCamelCase.foreignPassport,
-        [DocumentType.TaxpayerCard]: DocumentTypeCamelCase.taxpayerCard,
-        [DocumentType.RefInternallyDisplacedPerson]: DocumentTypeCamelCase.referenceInternallyDisplacedPerson,
-        [DocumentType.BirthCertificate]: DocumentTypeCamelCase.birthCertificate,
-        [DocumentType.LocalVaccinationCertificate]: DocumentTypeCamelCase.localVaccinationCertificate,
-        [DocumentType.ChildLocalVaccinationCertificate]: DocumentTypeCamelCase.childLocalVaccinationCertificate,
-        [DocumentType.InternationalVaccinationCertificate]: DocumentTypeCamelCase.internationalVaccinationCertificate,
-        [DocumentType.PensionCard]: DocumentTypeCamelCase.pensionCard,
-        [DocumentType.ResidencePermitPermanent]: DocumentTypeCamelCase.residencePermitPermanent,
-        [DocumentType.ResidencePermitTemporary]: DocumentTypeCamelCase.residencePermitTemporary,
-        [DocumentType.EResidency]: DocumentTypeCamelCase.eResidency,
-        [DocumentType.EResidentPassport]: DocumentTypeCamelCase.eResidentPassport,
-        [DocumentType.UId]: DocumentTypeCamelCase.uId,
-        [DocumentType.MilitaryBond]: DocumentTypeCamelCase.militaryBond,
-        [DocumentType.OfficialCertificate]: DocumentTypeCamelCase.officialCertificate,
-        [DocumentType.HousingCertificate]: DocumentTypeCamelCase.housingCertificate,
-        [DocumentType.EducationDocument]: DocumentTypeCamelCase.educationDocument,
-        [DocumentType.MarriageActRecord]: DocumentTypeCamelCase.marriageActRecord,
-        [DocumentType.DivorceActRecord]: DocumentTypeCamelCase.divorceActRecord,
-        [DocumentType.NameChangeActRecord]: DocumentTypeCamelCase.nameChangeActRecord,
-        [DocumentType.UserBirthCertificate]: DocumentTypeCamelCase.userBirthCertificate,
+    private static documentTypeToCamelCaseExceptions: Record<string, string> = {
+        ['student-id-card']: 'studentCard',
+        ['internal-passport']: 'idCard',
     }
 
-    static camelCaseToDocumentType: Record<DocumentTypeCamelCase, DocumentType> = {
-        [DocumentTypeCamelCase.idCard]: DocumentType.InternalPassport,
-        [DocumentTypeCamelCase.foreignPassport]: DocumentType.ForeignPassport,
-        [DocumentTypeCamelCase.taxpayerCard]: DocumentType.TaxpayerCard,
-        [DocumentTypeCamelCase.driverLicense]: DocumentType.DriverLicense,
-        [DocumentTypeCamelCase.vehicleLicense]: DocumentType.VehicleLicense,
-        [DocumentTypeCamelCase.studentCard]: DocumentType.StudentIdCard,
-        [DocumentTypeCamelCase.referenceInternallyDisplacedPerson]: DocumentType.RefInternallyDisplacedPerson,
-        [DocumentTypeCamelCase.birthCertificate]: DocumentType.BirthCertificate,
-        [DocumentTypeCamelCase.localVaccinationCertificate]: DocumentType.LocalVaccinationCertificate,
-        [DocumentTypeCamelCase.childLocalVaccinationCertificate]: DocumentType.ChildLocalVaccinationCertificate,
-        [DocumentTypeCamelCase.internationalVaccinationCertificate]: DocumentType.InternationalVaccinationCertificate,
-        [DocumentTypeCamelCase.pensionCard]: DocumentType.PensionCard,
-        [DocumentTypeCamelCase.residencePermitPermanent]: DocumentType.ResidencePermitPermanent,
-        [DocumentTypeCamelCase.residencePermitTemporary]: DocumentType.ResidencePermitTemporary,
-        [DocumentTypeCamelCase.eResidency]: DocumentType.EResidency,
-        [DocumentTypeCamelCase.eResidentPassport]: DocumentType.EResidentPassport,
-        [DocumentTypeCamelCase.uId]: DocumentType.UId,
-        [DocumentTypeCamelCase.militaryBond]: DocumentType.MilitaryBond,
-        [DocumentTypeCamelCase.officialCertificate]: DocumentType.OfficialCertificate,
-        [DocumentTypeCamelCase.housingCertificate]: DocumentType.HousingCertificate,
-        [DocumentTypeCamelCase.educationDocument]: DocumentType.EducationDocument,
-        [DocumentTypeCamelCase.marriageActRecord]: DocumentType.MarriageActRecord,
-        [DocumentTypeCamelCase.divorceActRecord]: DocumentType.DivorceActRecord,
-        [DocumentTypeCamelCase.nameChangeActRecord]: DocumentType.NameChangeActRecord,
-        [DocumentTypeCamelCase.userBirthCertificate]: DocumentType.UserBirthCertificate,
+    private static camelCaseToDocumentTypeExceptions: Record<string, string> = {
+        ['studentCard']: 'student-id-card',
+        ['idCard']: 'internal-passport',
     }
 
     private static defaultItnDate = '31.12.1899'
@@ -115,33 +64,12 @@ export class ApplicationUtils {
         ['У', 'Y'],
     ])
 
-    private static readonly documentTypeToName: Record<DocumentType, string> = {
-        [DocumentType.DriverLicense]: 'Посвідчення водія',
-        [DocumentType.VehicleLicense]: 'Свідоцтво про реєстрацію транспортного засобу',
-        [DocumentType.VehicleInsurance]: 'Страховой поліс транспортного засобу',
-        [DocumentType.StudentIdCard]: 'Студентський квиток',
-        [DocumentType.InternalPassport]: 'Паспорт громадянина України',
-        [DocumentType.ForeignPassport]: 'Закордонний паспорт',
-        [DocumentType.TaxpayerCard]: 'РНОКПП',
-        [DocumentType.RefInternallyDisplacedPerson]: 'Довідка ВПО',
-        [DocumentType.BirthCertificate]: 'Свідоцтво про народження дитини',
-        [DocumentType.LocalVaccinationCertificate]: 'Внутрішній COVID19-сертифікат',
-        [DocumentType.ChildLocalVaccinationCertificate]: 'Дитячий внутрішній COVID19-сертифікат',
-        [DocumentType.InternationalVaccinationCertificate]: 'Міжнародний COVID19-сертифікат',
-        [DocumentType.PensionCard]: 'Пенсійне посвідчення',
-        [DocumentType.ResidencePermitPermanent]: 'Посвідка на постійне проживання',
-        [DocumentType.ResidencePermitTemporary]: 'Посвідка на тимчасове проживання',
-        [DocumentType.EResidency]: 'Картка Е-резидента',
-        [DocumentType.EResidentPassport]: 'Паспорт Е-резидента',
-        [DocumentType.UId]: 'Тимчасова посвідка у військовий час',
-        [DocumentType.MilitaryBond]: 'Військова облігація',
-        [DocumentType.OfficialCertificate]: 'Посвідчення посадової особи',
-        [DocumentType.HousingCertificate]: 'Житловий сертифікат',
-        [DocumentType.EducationDocument]: 'Документи про освіту',
-        [DocumentType.MarriageActRecord]: 'Актовий запис про шлюб',
-        [DocumentType.DivorceActRecord]: 'Актовий запис про розлучення',
-        [DocumentType.NameChangeActRecord]: 'Актовий запис про зміну імені',
-        [DocumentType.UserBirthCertificate]: 'Актовий запис про народження',
+    static documentTypeToCamelCase(documentType: string): string {
+        return ApplicationUtils.documentTypeToCamelCaseExceptions[documentType] || camelCase(documentType)
+    }
+
+    static camelCaseToDocumentType(camelCaseDocumentType: string): string {
+        return ApplicationUtils.camelCaseToDocumentTypeExceptions[camelCaseDocumentType] || kebabCase(camelCaseDocumentType)
     }
 
     static isItnChecksumValid(itn: string): boolean {
@@ -151,7 +79,7 @@ export class ApplicationUtils {
 
         const ITN_POLY = [-1, 5, 7, 9, 4, 6, 10, 5, 7]
 
-        const digits = [...itn].map(x => +x)
+        const digits = [...itn].map(Number)
         const checksum = ITN_POLY.reduce((a, x, i) => a + x * digits[i], 0)
         const controlDigit = (checksum - 11 * Math.floor(checksum / 11)) % 10
         const last = digits.at(-1)
@@ -164,13 +92,13 @@ export class ApplicationUtils {
             return ''
         }
 
-        const days = parseInt(itn.substring(0, 5), 10)
+        const days = Number.parseInt(itn.slice(0, 5), 10)
 
         return DateTime.fromFormat(this.defaultItnDate, this.defaultFormat).plus({ days }).toFormat(this.defaultFormat)
     }
 
     static getGenderFromItn(itn: string): Gender {
-        return Number(itn[itn.length - 2]) % 2 === 0 ? Gender.female : Gender.male
+        return Number(itn.at(-2)) % 2 === 0 ? Gender.female : Gender.male
     }
 
     static isItnFormatValid(itn: string): boolean {
@@ -189,13 +117,13 @@ export class ApplicationUtils {
         })
 
         let resultName: string = name?.toLowerCase()
-        if (foundDelimiters.length) {
-            foundDelimiters.forEach((foundDelimiter: string) => {
+        if (foundDelimiters.length > 0) {
+            for (const foundDelimiter of foundDelimiters) {
                 resultName = resultName
                     .split(foundDelimiter)
                     .map((partName: string) => ApplicationUtils.capitalizeFirstLetter(partName))
                     .join(foundDelimiter)
-            })
+            }
 
             return resultName
         }
@@ -240,18 +168,18 @@ export class ApplicationUtils {
             UA: 29,
         }
 
-        const code = iban.match(/^([A-Z]{2})(\d{2})([A-Z\d]+)$/)
+        const code = iban.match(/^([A-Z]{2})(\d{2})([\dA-Z]+)$/)
         if (!code || iban.length !== CODE_LENGTHS[code[1]]) {
             return false
         }
 
-        const digits: string = (code[3] + code[1] + code[2]).replace(/[A-Z]/g, (letter: string) => (letter.charCodeAt(0) - 55).toString())
+        const digits: string = (code[3] + code[1] + code[2]).replaceAll(/[A-Z]/g, (letter: string) => {
+            const letterCode = letter.codePointAt(0)
+
+            return letterCode ? (letterCode - 55).toString() : Number.NaN.toString()
+        })
 
         return this.mod97(digits) === 1
-    }
-
-    static getDocumentName(documentType: DocumentType): string {
-        return this.documentTypeToName[documentType]
     }
 
     static getStreetName(street: string, streetType: string): string {
@@ -275,14 +203,14 @@ export class ApplicationUtils {
         const signatureByFilename: Map<string, string> = new Map()
         const signatures: string[] = []
 
-        signedItems.forEach(({ name, signature }: SignedItem) => {
+        for (const { name, signature } of signedItems) {
             if (!fileNames.has(name)) {
                 throw new Error(`Provided name doesn't match with a hashed file: ${name}`)
             }
 
             signatureByFilename.set(name, signature)
             signatures.push(signature)
-        })
+        }
 
         const hashedFilesWithSignatures = hashedFiles.map<HashedFileWithSignature>(({ fileName, fileHash }) => ({
             name: fileName,
@@ -312,34 +240,34 @@ export class ApplicationUtils {
         const { sessionType } = data
         switch (sessionType) {
             case SessionType.User: {
-                return { sessionType: data.sessionType, user: data }
+                return { sessionType, user: data }
             }
             case SessionType.EResident: {
-                return { sessionType: data.sessionType, user: data }
+                return { sessionType, user: data }
             }
             case SessionType.EResidentApplicant: {
-                return { sessionType: data.sessionType, user: data }
+                return { sessionType, user: data }
             }
             case SessionType.CabinetUser: {
-                return { sessionType: data.sessionType, user: data }
+                return { sessionType, user: data }
             }
             case SessionType.Acquirer: {
-                return { sessionType: data.sessionType, acquirer: data }
+                return { sessionType, acquirer: data }
             }
             case SessionType.PortalUser: {
-                return { sessionType: data.sessionType, user: data }
+                return { sessionType, user: data }
             }
             case SessionType.Partner: {
-                return { sessionType: data.sessionType, partner: data }
+                return { sessionType, partner: data }
             }
             case SessionType.Temporary: {
-                return { sessionType: data.sessionType, temporary: data }
+                return { sessionType, temporary: data }
             }
             case SessionType.ServiceEntrance: {
-                return { sessionType: data.sessionType, entrance: data }
+                return { sessionType, entrance: data }
             }
             case SessionType.ServiceUser: {
-                return { sessionType: data.sessionType, serviceUser: data }
+                return { sessionType, serviceUser: data }
             }
             default: {
                 const unhandledType: never = sessionType
@@ -359,6 +287,16 @@ export class ApplicationUtils {
         return skipEmogi ? `${text}!` : `${text} 👋`
     }
 
+    /**
+     * Get age from birth date. Powered by {@link https://moment.github.io/luxon/#/ luxon}
+     *
+     * @param birthDay Input birth date.
+     * @param format `birthDay` format (https://moment.github.io/luxon/#/formatting?id=table-of-tokens). Default - 'dd.MM.yyyy'
+     * @param unitOfTime Unit of time to return. Default - 'years'
+     *
+     * @returns Age in years if other `unitOfTime` is not specified
+     * @throws If input date is invalid
+     */
     static getAge(birthDay: string, format = 'dd.MM.yyyy', unitOfTime: ToRelativeUnit = 'years'): number {
         const birthdayDate = DateTime.fromFormat(birthDay, format)
 
@@ -394,17 +332,27 @@ export class ApplicationUtils {
         return `${lName} ${fName} ${mName || ''}`.trim()
     }
 
-    static getPassportFullName(passport: InternalPassport | ForeignPassport): string {
-        const { lastNameUA, firstNameUA, middleNameUA } = passport
-
+    static getPassportFullName({
+        lastNameUA,
+        firstNameUA,
+        middleNameUA,
+    }: {
+        lastNameUA: string
+        firstNameUA: string
+        middleNameUA?: string
+    }): string {
         return `${lastNameUA} ${firstNameUA} ${middleNameUA || ''}`.trim()
     }
 
-    static getChildFullName(birthCertificate: BirthCertificate): string {
-        const {
-            child: { lastName, firstName, middleName },
-        } = birthCertificate
-
+    static getChildFullName({
+        child: { lastName, firstName, middleName },
+    }: {
+        child: {
+            lastName: string
+            firstName: string
+            middleName?: string
+        }
+    }): string {
         return `${lastName} ${firstName} ${middleName || ''}`.trim()
     }
 
@@ -416,6 +364,15 @@ export class ApplicationUtils {
         return JSON.parse(Buffer.from(encodedObject, 'base64').toString())
     }
 
+    /**
+     * Format string or Date to the specified string format. Powered by {@link https://moment.github.io/luxon/#/ luxon}
+     *
+     * @param date Input date
+     * @param format Output date format (https://moment.github.io/luxon/#/formatting?id=table-of-tokens)
+     * @param fromFormat Input date format (https://moment.github.io/luxon/#/formatting?id=table-of-tokens). Used for string `date`. Default - 'dd.MM.yyyy'
+     *
+     * @throws If input date is invalid
+     */
     static formatDate(date: string | Date, format: string, fromFormat = 'dd.MM.yyyy'): string {
         const convertedDate = date instanceof Date ? DateTime.fromJSDate(date) : DateTime.fromFormat(date, fromFormat)
 
@@ -428,13 +385,29 @@ export class ApplicationUtils {
         return convertedDate.setLocale('uk-UA').toFormat(format)
     }
 
+    /**
+     * Check if the input date is valid. Powered by {@link https://moment.github.io/luxon/#/ luxon}
+     *
+     * @param date Input date.
+     * @param format `date` format (https://moment.github.io/luxon/#/formatting?id=table-of-tokens). Default - 'yyyy-MM-dd'
+     *
+     * @throws If input date is invalid
+     */
+    static validateDate(date: string, format = 'yyyy-MM-dd'): void | never {
+        const parsedDate = DateTime.fromFormat(date, format)
+
+        if (!parsedDate.isValid) {
+            throw new BadRequestError(`Invalid date: ${parsedDate.invalidReason} ${parsedDate.invalidExplanation}`)
+        }
+    }
+
     static formatPhoneNumber(rawPhone: string, separator = ' ', prefix = '+'): string {
         return prefix + rawPhone.replace(/^\+?(\d{2})(\d{3})(\d{3})(\d{2})(\d+)$/, ['$1', '$2', '$3', '$4', '$5'].join(separator))
     }
 
     static formatAmountWithThousandsSeparator(amount: number, units?: Units, minimumFractionDigits?: number): string {
         // https://github.com/nodejs/help/issues/4068 (char "\u00A0" not equals with space in test asserts; reproduced in node 18.13, 18.15, 18.17)
-        const result = amount.toLocaleString('uk-UA', { useGrouping: true, minimumFractionDigits }).replace(/\u00A0/g, ' ')
+        const result = amount.toLocaleString('uk-UA', { useGrouping: true, minimumFractionDigits }).replaceAll('\u00A0', ' ')
 
         return units ? `${result} ${units}` : result
     }
@@ -454,7 +427,7 @@ export class ApplicationUtils {
     }
 
     static toDecimalPlaces(amount: number, decimalPlaces = 2): number {
-        return parseFloat(amount.toFixed(decimalPlaces))
+        return Number.parseFloat(amount.toFixed(decimalPlaces))
     }
 
     static filterByAppVersions<T extends WithAppVersions>(
@@ -506,15 +479,15 @@ export class ApplicationUtils {
     }
 
     static sanitizeString(input: string): string {
-        return input.replace(/[^a-z\dа-яґєії]/gi, '')
+        return input.replaceAll(/[^\da-zа-яєіїґ]/gi, '')
     }
 
     private static mod97(string: string): number {
         let checksum: string | number = string.slice(0, 2)
         let fragment: string
         for (let offset = 2; offset < string.length; offset += 7) {
-            fragment = String(checksum) + string.substring(offset, offset + 7)
-            checksum = parseInt(fragment, 10) % 97
+            fragment = String(checksum) + string.slice(offset, offset + 7)
+            checksum = Number.parseInt(fragment, 10) % 97
         }
 
         return <number>checksum

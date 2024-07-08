@@ -6,7 +6,6 @@ import {
     NavigationPanel,
     PlatformAppVersion,
     ProfileFeature,
-    PublicServiceCode,
     PublicServiceContextMenu,
     PublicServiceSettings,
     PublicServiceStatus,
@@ -19,8 +18,8 @@ import { AuthProviderName } from './interfaces/publicService'
 import { profileFeaturesToList } from './session'
 
 export class PublicServiceUtils {
-    private static readonly serviceAvailabilityStrategies: Partial<Record<PublicServiceCode, (features: UserFeatures) => boolean>> = {
-        [PublicServiceCode.officeOfficialWorkspace]: (features) => features[ProfileFeature.office]?.googleWorkspace === 'true',
+    private static readonly serviceAvailabilityStrategies: Partial<Record<string, (features: UserFeatures) => boolean>> = {
+        ['officeOfficialWorkspace']: (features) => features[ProfileFeature.office]?.googleWorkspace === 'true',
     }
 
     static getContacts(user: UserTokenData): ContactsResponse {

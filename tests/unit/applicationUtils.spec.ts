@@ -5,11 +5,9 @@ import { ApiError, BadRequestError } from '@diia-inhouse/errors'
 import TestKit from '@diia-inhouse/test'
 import {
     ActionVersion,
-    BirthCertificate,
     Gender,
     HashedFile,
     HttpStatusCode,
-    InternalPassport,
     PlatformType,
     SessionType,
     SignedItem,
@@ -19,8 +17,32 @@ import {
 
 import { ApplicationUtils } from '../../src/applicationUtils'
 
+const checkFormatDate = (): void => {
+    ApplicationUtils.formatDate('21/01/2023', 'dd-MM-yyyy', 'dd.MM.yyyy')
+}
+
 describe('ApplicationUtils', () => {
     const testKit = new TestKit()
+
+    describe('documentTypeToCamelCase', () => {
+        it.each([
+            ['foo-bar', 'fooBar'],
+            ['student-id-card', 'studentCard'],
+            ['internal-passport', 'idCard'],
+        ])('should transform %s -> %s', (input, expected) => {
+            expect(ApplicationUtils.documentTypeToCamelCase(input)).toBe(expected)
+        })
+    })
+
+    describe('camelCaseToDocumentType', () => {
+        it.each([
+            ['fooBar', 'foo-bar'],
+            ['studentCard', 'student-id-card'],
+            ['idCard', 'internal-passport'],
+        ])('should transform %s -> %s', (input, expected) => {
+            expect(ApplicationUtils.camelCaseToDocumentType(input)).toBe(expected)
+        })
+    })
 
     describe('mapCyrillic', () => {
         it('should map string with cyrillic to string with latin', () => {
@@ -295,10 +317,6 @@ describe('ApplicationUtils', () => {
         })
 
         it('should throw error if passed date in wrong format', () => {
-            const checkFormatDate = (): void => {
-                ApplicationUtils.formatDate('21/01/2023', 'dd-MM-yyyy', 'dd.MM.yyyy')
-            }
-
             expect(checkFormatDate).toThrow('Invalid date')
         })
     })
@@ -313,7 +331,7 @@ describe('ApplicationUtils', () => {
                 },
             }
 
-            const result = ApplicationUtils.getChildFullName(<BirthCertificate>birthCertificate)
+            const result = ApplicationUtils.getChildFullName(birthCertificate)
 
             expect(result).toBe('last first middle')
         })
@@ -326,7 +344,7 @@ describe('ApplicationUtils', () => {
                 },
             }
 
-            const result = ApplicationUtils.getChildFullName(<BirthCertificate>birthCertificate)
+            const result = ApplicationUtils.getChildFullName(birthCertificate)
 
             expect(result).toBe('last first')
         })
@@ -340,7 +358,7 @@ describe('ApplicationUtils', () => {
                 middleNameUA: 'middle',
             }
 
-            const result = ApplicationUtils.getPassportFullName(<InternalPassport>passport)
+            const result = ApplicationUtils.getPassportFullName(passport)
 
             expect(result).toBe('last first middle')
         })
@@ -351,7 +369,7 @@ describe('ApplicationUtils', () => {
                 firstNameUA: 'first',
             }
 
-            const result = ApplicationUtils.getPassportFullName(<InternalPassport>passport)
+            const result = ApplicationUtils.getPassportFullName(passport)
 
             expect(result).toBe('last first')
         })
@@ -512,7 +530,7 @@ describe('ApplicationUtils', () => {
 
             const result = ApplicationUtils.formatAmountWithThousandsSeparator(amount, units)
 
-            expect(result.replace(/\s/g, ' ')).toBe(expected)
+            expect(result.replaceAll(/\s/g, ' ')).toBe(expected)
         })
     })
 
@@ -530,7 +548,7 @@ describe('ApplicationUtils', () => {
     describe('convertFromPennies', () => {
         it('should convert from pennies', () => {
             const pennies = 100
-            const expected = 1.0
+            const expected = 1
 
             const result = ApplicationUtils.convertFromPennies(pennies)
 
@@ -564,7 +582,7 @@ describe('ApplicationUtils', () => {
             const amount = 10
             const multiplier = 3
             const decimalPlaces = 3
-            const expected = 30.0
+            const expected = 30
 
             const result = ApplicationUtils.multiplySum(amount, multiplier, decimalPlaces)
 
