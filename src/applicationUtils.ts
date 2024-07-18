@@ -16,7 +16,6 @@ import {
     SessionType,
     SignedItem,
     TokenData,
-    Units,
     UserTokenData,
     WithAppVersions,
 } from '@diia-inhouse/types'
@@ -405,7 +404,14 @@ export class ApplicationUtils {
         return prefix + rawPhone.replace(/^\+?(\d{2})(\d{3})(\d{3})(\d{2})(\d+)$/, ['$1', '$2', '$3', '$4', '$5'].join(separator))
     }
 
-    static formatAmountWithThousandsSeparator(amount: number, units?: Units, minimumFractionDigits?: number): string {
+    /**
+     * Format number as: "XX XXX,XX {units}".
+     *
+     * @param amount Input number
+     * @param units Unit to be append at the end of the formatted number
+     * @param minimumFractionDigits Minimum number of fraction digits
+     */
+    static formatAmountWithThousandsSeparator(amount: number, units?: string, minimumFractionDigits?: number): string {
         // https://github.com/nodejs/help/issues/4068 (char "\u00A0" not equals with space in test asserts; reproduced in node 18.13, 18.15, 18.17)
         const result = amount.toLocaleString('uk-UA', { useGrouping: true, minimumFractionDigits }).replaceAll('\u00A0', ' ')
 
@@ -413,7 +419,7 @@ export class ApplicationUtils {
     }
 
     static convertToPennies(amount: number): number {
-        return amount * 100
+        return this.toDecimalPlaces(amount * 100, 0)
     }
 
     static convertFromPennies(amount: number): number {

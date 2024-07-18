@@ -535,10 +535,11 @@ describe('ApplicationUtils', () => {
     })
 
     describe('convertToPennies', () => {
-        it('should convert to pennies', () => {
-            const hryvnia = 1
-            const expected = 100
-
+        it.each([
+            [1, 100],
+            [123.45, 12345],
+            [299.9, 29990],
+        ])('should convert to pennies', (hryvnia, expected) => {
             const result = ApplicationUtils.convertToPennies(hryvnia)
 
             expect(result).toBe(expected)
@@ -589,6 +590,7 @@ describe('ApplicationUtils', () => {
             expect(result).toBe(expected)
         })
     })
+
     describe('isIbanNumberValid', () => {
         it('should return true for a valid IBAN number', () => {
             const iban = 'UA903052992990004149123456789'
