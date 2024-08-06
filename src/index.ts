@@ -22,4 +22,6 @@ export { NetworkUtils } from './network'
 
 export { IntegrationUtils } from './integration'
 
+export { RandomUtils } from './random'
+
 export * from './session'

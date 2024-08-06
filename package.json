@@ -1,6 +1,6 @@
 {
     "name": "@diia-inhouse/utils",
-    "version": "3.6.0",
+    "version": "4.1.0",
     "description": "Generic utils",
     "main": "dist/index.js",
     "types": "dist/types/index.d.ts",
@@ -11,7 +11,7 @@
         "dist"
     ],
     "engines": {
-        "node": ">=18"
+        "node": ">=20"
     },
     "scripts": {
         "prebuild": "rimraf dist",
@@ -30,10 +30,10 @@
     "dependencies": {
         "@types/luxon": "3.4.2",
         "bson": "6.2.0",
-        "compare-versions": "6.1.0",
+        "compare-versions": "6.1.1",
         "fast-levenshtein": "3.0.0",
         "lodash": "4.17.21",
-        "luxon": "3.4.4",
+        "luxon": "3.5.0",
         "moment": "2.30.1"
     },
     "peerDependencies": {
@@ -42,20 +42,20 @@
         "@diia-inhouse/validators": ">=1.5.0"
     },
     "devDependencies": {
-        "@diia-inhouse/configs": "1.31.1",
-        "@diia-inhouse/errors": "1.9.0",
+        "@diia-inhouse/configs": "2.2.0",
+        "@diia-inhouse/errors": "1.10.0",
         "@diia-inhouse/eslint-config": "5.1.0",
-        "@diia-inhouse/test": "6.3.0",
-        "@diia-inhouse/types": "6.24.0",
+        "@diia-inhouse/test": "6.4.0",
+        "@diia-inhouse/types": "6.50.0",
         "@diia-inhouse/validators": "1.17.0",
         "@types/fast-levenshtein": "0.0.4",
-        "@types/lodash": "4.17.0",
-        "@types/node": "20.11.24",
+        "@types/lodash": "4.17.7",
+        "@types/node": "22.1.0",
         "@typescript-eslint/typescript-estree": "7.0.1",
-        "lockfile-lint": "4.13.2",
-        "madge": "6.1.0",
+        "lockfile-lint": "4.14.0",
+        "madge": "8.0.0",
         "protobufjs": "7.2.6",
-        "rimraf": "5.0.5"
+        "rimraf": "6.0.1"
     },
     "release": {
         "extends": "@diia-inhouse/configs/dist/semantic-release/package",

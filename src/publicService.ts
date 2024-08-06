@@ -1,28 +1,17 @@
-import { compare } from 'compare-versions'
-
 import {
-    AppUser,
     ContactsResponse,
     NavigationPanel,
     PlatformAppVersion,
-    ProfileFeature,
     PublicServiceContextMenu,
     PublicServiceSettings,
-    PublicServiceStatus,
-    UserFeatures,
     UserTokenData,
 } from '@diia-inhouse/types'
 
 import { ApplicationUtils } from './applicationUtils'
 import { AuthProviderName } from './interfaces/publicService'
-import { profileFeaturesToList } from './session'
 
-export class PublicServiceUtils {
-    private static readonly serviceAvailabilityStrategies: Partial<Record<string, (features: UserFeatures) => boolean>> = {
-        ['officeOfficialWorkspace']: (features) => features[ProfileFeature.office]?.googleWorkspace === 'true',
-    }
-
-    static getContacts(user: UserTokenData): ContactsResponse {
+export const PublicServiceUtils = {
+    getContacts(user: UserTokenData): ContactsResponse {
         const { phoneNumber, email } = user
 
         return {
@@ -32,9 +21,8 @@ export class PublicServiceUtils {
             email,
             attentionMessage: undefined,
         }
-    }
-
-    static getContactsText(user: UserTokenData): string {
+    },
+    getContactsText(user: UserTokenData): string {
         const { phoneNumber, email, authEntryPoint } = user
         const { isBankId, target } = authEntryPoint || {}
 
@@ -48,9 +36,8 @@ export class PublicServiceUtils {
         }
 
         return 'Будь ласка, заповніть контактні дані.'
-    }
-
-    static extractContextMenu(
+    },
+    extractContextMenu(
         settings: PublicServiceSettings,
         appVersion: PlatformAppVersion | undefined,
     ): PublicServiceContextMenu[] | undefined {
@@ -60,9 +47,8 @@ export class PublicServiceUtils {
         }
 
         return ApplicationUtils.filterByAppVersions(contextMenu, appVersion)
-    }
-
-    static extractNavigationPanel(
+    },
+    extractNavigationPanel(
         settings: PublicServiceSettings,
         appVersion: PlatformAppVersion | undefined,
         header?: string,
@@ -74,46 +60,5 @@ export class PublicServiceUtils {
             header: header || name,
             contextMenu,
         }
-    }
-
-    static isAvailable(
-        settings: PublicServiceSettings,
-        user: AppUser,
-        platformAppVersion: PlatformAppVersion,
-        userFeatures: UserFeatures = {},
-    ): boolean {
-        const { code, status, sessionTypes, profileFeature, platformMinVersion, appVersions } = settings
-        const { sessionType } = user
-        const { platformType, platformVersion, appVersion } = platformAppVersion
-
-        if (status !== PublicServiceStatus.active) {
-            return false
-        }
-
-        if (!sessionTypes.includes(sessionType)) {
-            return false
-        }
-
-        const featuresList = profileFeaturesToList(userFeatures)
-        if (profileFeature && !featuresList?.includes(profileFeature)) {
-            return false
-        }
-
-        const strategy = this.serviceAvailabilityStrategies[code]
-        if (strategy && !strategy(userFeatures)) {
-            return false
-        }
-
-        const platformMinVersionValue = platformMinVersion?.[platformType]
-        if (platformMinVersionValue && compare(platformVersion, platformMinVersionValue, '<')) {
-            return false
-        }
-
-        const appVersionsBySession = appVersions?.[sessionType]
-        if (!appVersionsBySession) {
-            return true
-        }
-
-        return ApplicationUtils.isAppVersionMatch(appVersion, platformType, appVersionsBySession)
-    }
+    },
 }
