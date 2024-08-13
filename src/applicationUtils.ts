@@ -20,6 +20,32 @@ import {
     WithAppVersions,
 } from '@diia-inhouse/types'
 
+const cyrillicToLatinPairArray = [
+    ['і', 'i'],
+    ['е', 'e'],
+    ['у', 'y'],
+    ['и', 'u'],
+    ['о', 'o'],
+    ['р', 'p'],
+    ['а', 'a'],
+    ['к', 'k'],
+    ['х', 'x'],
+    ['с', 'c'],
+    ['І', 'I'],
+    ['Е', 'E'],
+    ['Т', 'T'],
+    ['О', 'O'],
+    ['Р', 'P'],
+    ['А', 'A'],
+    ['Н', 'H'],
+    ['К', 'K'],
+    ['Х', 'X'],
+    ['С', 'C'],
+    ['В', 'B'],
+    ['М', 'M'],
+    ['У', 'Y'],
+];
+
 export class ApplicationUtils {
     private static documentTypeToCamelCaseExceptions: Record<string, string> = {
         ['student-id-card']: 'studentCard',
@@ -37,31 +63,11 @@ export class ApplicationUtils {
 
     private static readonly nameDelimiters: string[] = [' ', '-']
 
-    private static readonly cyrillicToLatin: Map<string, string> = new Map([
-        ['і', 'i'],
-        ['е', 'e'],
-        ['у', 'y'],
-        ['и', 'u'],
-        ['о', 'o'],
-        ['р', 'p'],
-        ['а', 'a'],
-        ['к', 'k'],
-        ['х', 'x'],
-        ['с', 'c'],
-        ['І', 'I'],
-        ['Е', 'E'],
-        ['Т', 'T'],
-        ['О', 'O'],
-        ['Р', 'P'],
-        ['А', 'A'],
-        ['Н', 'H'],
-        ['К', 'K'],
-        ['Х', 'X'],
-        ['С', 'C'],
-        ['В', 'B'],
-        ['М', 'M'],
-        ['У', 'Y'],
-    ])
+    private static readonly cyrillicToLatin: Map<string, string> = new Map(cyrillicToLatinPairArray)
+
+    private static readonly latinToCyrillic: Map<string, string> = new Map(cyrillicToLatinPairArray.map((t)=>
+        [t[1], t[0]]
+    ))
 
     static documentTypeToCamelCase(documentType: string): string {
         return ApplicationUtils.documentTypeToCamelCaseExceptions[documentType] || camelCase(documentType)
@@ -154,11 +160,9 @@ export class ApplicationUtils {
     }
 
     static mapLatin(value: string): string {
-        const latinToCyrillic = new Map(Array.from(this.cyrillicToLatin).map(([cyr, lat]) => [lat, cyr]))
-
         return value
             .split('')
-            .map((char: string) => latinToCyrillic.get(char) || char)
+            .map((char: string) => this.latinToCyrillic.get(char) || char)
             .join('')
     }
 
