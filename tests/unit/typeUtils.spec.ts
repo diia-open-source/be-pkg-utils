@@ -1,3 +1,5 @@
+import { describe, expect, it } from 'vitest'
+
 import { TypeUtils } from '../../src'
 
 describe('TypeUtils', () => {

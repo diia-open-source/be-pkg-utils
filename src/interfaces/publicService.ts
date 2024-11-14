@@ -5,3 +5,11 @@ export enum AuthProviderName {
     BankId = 'bankid',
     Nfc = 'nfc',
 }
+
+export interface InputPhoneCodeOrgParams {
+    inputCode?: string
+    phoneValue?: string
+    codeValueId?: string
+    codeIds?: string[]
+    hint?: string
+}

@@ -27,7 +27,7 @@ export const Guards = {
             return false
         }
 
-        return (<UserSession>session).user !== undefined
+        return (session as UserSession).user !== undefined
     },
 
     isAcquirerSession(session: ActionSession | undefined): session is AcquirerSession {
@@ -35,7 +35,7 @@ export const Guards = {
             return false
         }
 
-        return (<AcquirerSession>session).acquirer !== undefined
+        return (session as AcquirerSession).acquirer !== undefined
     },
 
     isServiceEntranceSession(session: ActionSession | undefined): session is ServiceEntranceSession {
@@ -43,27 +43,27 @@ export const Guards = {
             return false
         }
 
-        return (<ServiceEntranceSession>session).entrance !== undefined
+        return (session as ServiceEntranceSession).entrance !== undefined
     },
 
     hasOnInitHook(instance: unknown): instance is OnInit {
-        return isFunction((<OnInit>instance)?.onInit)
+        return isFunction((instance as OnInit)?.onInit)
     },
 
     hasOnHealthCheckHook(instance: unknown): instance is OnHealthCheck {
-        return isFunction((<OnHealthCheck>instance)?.onHealthCheck)
+        return isFunction((instance as OnHealthCheck)?.onHealthCheck)
     },
 
     hasOnDestroyHook(instance: unknown): instance is OnDestroy {
-        return isFunction((<OnDestroy>instance)?.onDestroy)
+        return isFunction((instance as OnDestroy)?.onDestroy)
     },
 
     hasOnRegistrationsFinishedHook(instance: unknown): instance is OnRegistrationsFinished {
-        return isFunction((<OnRegistrationsFinished>instance)?.onRegistrationsFinished)
+        return isFunction((instance as OnRegistrationsFinished)?.onRegistrationsFinished)
     },
 
     hasOnBeforeApplicationShutdownHook(instance: unknown): instance is OnBeforeApplicationShutdown {
-        return isFunction((<OnBeforeApplicationShutdown>instance)?.onBeforeApplicationShutdown)
+        return isFunction((instance as OnBeforeApplicationShutdown)?.onBeforeApplicationShutdown)
     },
 
     isSettledError(value: PromiseSettledResult<unknown>): value is PromiseRejectedResult {

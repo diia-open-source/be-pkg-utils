@@ -1,3 +1,5 @@
+import { describe, expect, it } from 'vitest'
+
 import { PaymentUtils } from '../../src/payment'
 
 describe('Payment utils', () => {

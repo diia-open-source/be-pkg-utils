@@ -1,6 +1,6 @@
 {
     "name": "@diia-inhouse/utils",
-    "version": "4.1.0",
+    "version": "4.13.0",
     "description": "Generic utils",
     "main": "dist/index.js",
     "types": "dist/types/index.d.ts",
@@ -17,19 +17,17 @@
         "prebuild": "rimraf dist",
         "build": "tsc",
         "semantic-release": "semantic-release",
-        "start": "npm run build && node dist/index.js",
         "lint": "eslint --ext .ts . && prettier --check .",
         "lint-fix": "eslint '*/**/*.{js,ts}' --fix && prettier --write .",
         "lint:lockfile": "lockfile-lint --path package-lock.json --allowed-hosts registry.npmjs.org --validate-https",
         "prepare": "npm run build",
-        "test": "jest",
-        "test:unit": "npm run test --selectProjects unit --",
-        "test:coverage": "npm run test --selectProjects unit --coverage",
+        "test": "vitest run",
+        "test:watch": "vitest watch",
         "find-circulars": "madge --circular --extensions ts ./"
     },
     "dependencies": {
         "@types/luxon": "3.4.2",
-        "bson": "6.2.0",
+        "bson": "6.9.0",
         "compare-versions": "6.1.1",
         "fast-levenshtein": "3.0.0",
         "lodash": "4.17.21",
@@ -42,20 +40,24 @@
         "@diia-inhouse/validators": ">=1.5.0"
     },
     "devDependencies": {
-        "@diia-inhouse/configs": "2.2.0",
+        "@diia-inhouse/configs": "4.0.0",
         "@diia-inhouse/errors": "1.10.0",
-        "@diia-inhouse/eslint-config": "5.1.0",
-        "@diia-inhouse/test": "6.4.0",
-        "@diia-inhouse/types": "6.50.0",
+        "@diia-inhouse/eslint-config": "5.6.5",
+        "@diia-inhouse/test": "6.6.4",
+        "@diia-inhouse/types": "6.92.0",
         "@diia-inhouse/validators": "1.17.0",
         "@types/fast-levenshtein": "0.0.4",
-        "@types/lodash": "4.17.7",
-        "@types/node": "22.1.0",
-        "@typescript-eslint/typescript-estree": "7.0.1",
+        "@types/lodash": "4.17.13",
+        "@types/node": "22.9.0",
+        "@typescript-eslint/typescript-estree": "8.14.0",
+        "@vitest/coverage-v8": "2.1.5",
+        "@vitest/ui": "2.1.5",
         "lockfile-lint": "4.14.0",
         "madge": "8.0.0",
-        "protobufjs": "7.2.6",
-        "rimraf": "6.0.1"
+        "protobufjs": "7.4.0",
+        "rimraf": "6.0.1",
+        "vite-tsconfig-paths": "5.1.2",
+        "vitest": "2.1.5"
     },
     "release": {
         "extends": "@diia-inhouse/configs/dist/semantic-release/package",
@@ -84,9 +86,6 @@
                 }
             }
         ]
-    },
-    "jest": {
-        "preset": "@diia-inhouse/configs/dist/jest"
     },
     "prettier": "@diia-inhouse/eslint-config/prettier",
     "madge": {

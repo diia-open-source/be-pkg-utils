@@ -1,3 +1,5 @@
+import { describe, expect, it } from 'vitest'
+
 import { phoneticChecker } from '../../src/phoneticChecker/index'
 
 const trasholdCoefficient = 0.75

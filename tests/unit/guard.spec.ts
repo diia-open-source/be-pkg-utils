@@ -1,3 +1,5 @@
+import { describe, expect, it, vi } from 'vitest'
+
 import { ApiError, BadRequestError } from '@diia-inhouse/errors'
 import TestKit from '@diia-inhouse/test'
 
@@ -88,7 +90,7 @@ describe('Guards', () => {
     describe('hooks', () => {
         it('should return true if instance has onInit method', () => {
             const instance = {
-                onInit: jest.fn(),
+                onInit: vi.fn(),
             }
             const result = Guards.hasOnInitHook(instance)
 
@@ -102,7 +104,7 @@ describe('Guards', () => {
         })
         it('should return true if instance has onHealthCheckHook method', () => {
             const instance = {
-                onHealthCheck: jest.fn(),
+                onHealthCheck: vi.fn(),
             }
             const result = Guards.hasOnHealthCheckHook(instance)
 
@@ -117,7 +119,7 @@ describe('Guards', () => {
 
         it('should return true if instance has onDestroyHook method', () => {
             const instance = {
-                onDestroy: jest.fn(),
+                onDestroy: vi.fn(),
             }
             const result = Guards.hasOnDestroyHook(instance)
 
@@ -132,7 +134,7 @@ describe('Guards', () => {
 
         it('should return true if instance has onRegistrationsFinishedHook method', () => {
             const instance = {
-                onRegistrationsFinished: jest.fn(),
+                onRegistrationsFinished: vi.fn(),
             }
             const result = Guards.hasOnRegistrationsFinishedHook(instance)
 

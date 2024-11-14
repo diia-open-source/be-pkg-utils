@@ -1,3 +1,5 @@
+import { describe, expect, it } from 'vitest'
+
 import TestKit from '@diia-inhouse/test'
 import {
     ContactsResponse,
@@ -6,6 +8,8 @@ import {
     PublicServiceContextMenuType,
     PublicServiceSettings,
 } from '@diia-inhouse/types'
+import { DSBodyItem } from '@diia-inhouse/types/dist/types/generated/designSystem/item'
+import { emailRuValidation, emailValidation, phoneNumberValidation } from '@diia-inhouse/validators'
 
 import { PublicServiceUtils } from '../../src'
 import { AuthProviderName } from '../../src/interfaces/publicService'
@@ -25,6 +29,130 @@ describe('Public service utils', () => {
                 phoneNumber: user.phoneNumber,
                 email: user.email,
                 attentionMessage: undefined,
+            })
+        })
+    })
+
+    describe('getContactsComponent', () => {
+        it('should return contacts response', () => {
+            const { user } = testKit.session.getUserSession({ phoneNumber: '+380123123' })
+            const { email } = user
+
+            const contacts = PublicServiceUtils.getContactsComponent(user)
+
+            expect(contacts).toEqual<DSBodyItem>({
+                titleLabelMlc: {
+                    label: 'Контактні дані',
+                },
+                attentionMessageMlc: undefined,
+                textLabelMlc: {
+                    componentId: expect.any(String),
+                    text: expect.any(String),
+                    parameters: [],
+                },
+                questionFormsOrg: {
+                    id: 'question_form',
+                    items: [
+                        {
+                            inputPhoneCodeOrg: {
+                                componentId: 'phone_with_code',
+                                label: 'Контактний номер телефону',
+                                mandatory: true,
+                                inputCode: 'phone',
+                                codeValueIsEditable: false,
+                                codeValueId: 'UA',
+                                inputPhoneMlc: {
+                                    componentId: 'phone',
+                                    value: '123123',
+                                    validation: [],
+                                },
+                                codes: [
+                                    {
+                                        id: 'UA',
+                                        maskCode: '## ### ####',
+                                        placeholder: '00 000 0000',
+                                        label: '+380',
+                                        description: '🇺🇦 Україна (+380)',
+                                        value: '+380',
+                                        icon: '🇺🇦',
+                                        validation: [phoneNumberValidation],
+                                    },
+                                ],
+                            },
+                        },
+                        {
+                            inputTextMlc: {
+                                id: 'email',
+                                componentId: 'email',
+                                inputCode: 'email',
+                                mandatory: true,
+                                value: email,
+                                label: 'Email',
+                                placeholder: 'hello@diia.gov.ua',
+                                validation: [emailValidation, emailRuValidation],
+                            },
+                        },
+                    ],
+                },
+            })
+        })
+
+        it('should return contacts response with empty phone number', () => {
+            const { user } = testKit.session.getUserSession({ phoneNumber: '123123213' })
+            const { email } = user
+
+            const contacts = PublicServiceUtils.getContactsComponent(user)
+
+            expect(contacts).toEqual<DSBodyItem>({
+                titleLabelMlc: {
+                    label: 'Контактні дані',
+                },
+                attentionMessageMlc: undefined,
+                textLabelMlc: undefined,
+                questionFormsOrg: {
+                    id: 'question_form',
+                    items: [
+                        {
+                            inputPhoneCodeOrg: {
+                                componentId: 'phone_with_code',
+                                label: 'Контактний номер телефону',
+                                mandatory: true,
+                                inputCode: 'phone',
+                                codeValueIsEditable: false,
+                                codeValueId: 'UA',
+                                inputPhoneMlc: {
+                                    componentId: 'phone',
+                                    value: '',
+                                    validation: [],
+                                },
+                                codes: [
+                                    {
+                                        id: 'UA',
+                                        maskCode: '## ### ####',
+                                        placeholder: '00 000 0000',
+                                        label: '+380',
+                                        description: '🇺🇦 Україна (+380)',
+                                        value: '+380',
+                                        icon: '🇺🇦',
+                                        validation: [phoneNumberValidation],
+                                    },
+                                ],
+                            },
+                        },
+                        {
+                            inputTextMlc: {
+                                id: 'email',
+                                componentId: 'email',
+                                inputCode: 'email',
+                                mandatory: true,
+                                value: email,
+                                label: 'Email',
+                                placeholder: 'hello@diia.gov.ua',
+                                validation: [emailValidation, emailRuValidation],
+                            },
+                        },
+                    ],
+                },
             })
         })
     })
@@ -75,7 +203,7 @@ describe('Public service utils', () => {
 
     describe('extractContextMenu', () => {
         it('should filter by app versions and return context menu', () => {
-            const validContextMenu = <PublicServiceContextMenu>{
+            const validContextMenu = {
                 name: 'name',
                 type: PublicServiceContextMenuType.assistantScreen,
                 appVersions: {
@@ -88,10 +216,10 @@ describe('Public service utils', () => {
                         iOS: [],
                     },
                 },
-            }
+            } as PublicServiceContextMenu
 
             expect(
-                PublicServiceUtils.extractContextMenu(<PublicServiceSettings>{ contextMenu: [validContextMenu] }, {
+                PublicServiceUtils.extractContextMenu({ contextMenu: [validContextMenu] } as PublicServiceSettings, {
                     appVersion: '2.0.0',
                     platformType: PlatformType.Android,
                     platformVersion: '13',
@@ -101,7 +229,7 @@ describe('Public service utils', () => {
 
         it('should not extract context menu in case it is undefined', () => {
             expect(
-                PublicServiceUtils.extractContextMenu(<PublicServiceSettings>{}, {
+                PublicServiceUtils.extractContextMenu({} as PublicServiceSettings, {
                     appVersion: '2.0.0',
                     platformType: PlatformType.Android,
                     platformVersion: '13',
@@ -112,7 +240,7 @@ describe('Public service utils', () => {
 
     describe('extractNavigationPanel', () => {
         it('should successfully extract navigation pannel', () => {
-            const validContextMenu = <PublicServiceContextMenu>{
+            const validContextMenu = {
                 name: 'Navigation',
                 type: PublicServiceContextMenuType.assistantScreen,
                 appVersions: {
@@ -125,14 +253,17 @@ describe('Public service utils', () => {
                         iOS: [],
                     },
                 },
-            }
+            } as PublicServiceContextMenu
 
             expect(
-                PublicServiceUtils.extractNavigationPanel(<PublicServiceSettings>{ name: 'Navigation', contextMenu: [validContextMenu] }, {
-                    appVersion: '2.0.0',
-                    platformType: PlatformType.Android,
-                    platformVersion: '13',
-                }),
+                PublicServiceUtils.extractNavigationPanel(
+                    { name: 'Navigation', contextMenu: [validContextMenu] } as PublicServiceSettings,
+                    {
+                        appVersion: '2.0.0',
+                        platformType: PlatformType.Android,
+                        platformVersion: '13',
+                    },
+                ),
             ).toEqual({ header: 'Navigation', contextMenu: [validContextMenu] })
         })
     })

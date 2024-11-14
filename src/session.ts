@@ -3,7 +3,7 @@ import { DiiaOfficeStatus, EResidentSession, ProfileFeature, UserFeatures, UserS
 export function profileFeaturesToList(features: UserFeatures): ProfileFeature[] {
     const featuresList = Object.entries(features)
         .filter(([, value]) => value)
-        .map(([key]) => <ProfileFeature>key)
+        .map(([key]) => key as ProfileFeature)
 
     return featuresList.filter((feature) => {
         if (feature !== ProfileFeature.office) {

@@ -35,8 +35,6 @@ export class ApplicationUtils {
 
     private static defaultFormat = 'dd.MM.yyyy'
 
-    private static readonly nameDelimiters: string[] = [' ', '-']
-
     private static readonly cyrillicToLatin: Map<string, string> = new Map([
         ['і', 'i'],
         ['е', 'e'],
@@ -62,6 +60,29 @@ export class ApplicationUtils {
         ['М', 'M'],
         ['У', 'Y'],
     ])
+
+    private static readonly nameComponentsToLowerCase = [
+        'огли',
+        'оглу',
+        'заде',
+        'кизи',
+        'бей',
+        'бек',
+        'паша',
+        'хан',
+        'шах',
+        'мелік',
+        'зуль',
+        'ібн',
+        'тер',
+        'аль',
+        'ель',
+        'аш',
+        'ас',
+        'ад',
+        'ель',
+        'ес',
+    ]
 
     static documentTypeToCamelCase(documentType: string): string {
         return ApplicationUtils.documentTypeToCamelCaseExceptions[documentType] || camelCase(documentType)
@@ -108,26 +129,25 @@ export class ApplicationUtils {
         return true
     }
 
-    static capitalizeName(name: string): string {
-        const foundDelimiters: string[] = this.nameDelimiters.filter((delimiter: string) => {
-            const regex = new RegExp(delimiter)
-
-            return regex.test(name)
-        })
-
-        let resultName: string = name?.toLowerCase()
-        if (foundDelimiters.length > 0) {
-            for (const foundDelimiter of foundDelimiters) {
-                resultName = resultName
-                    .split(foundDelimiter)
-                    .map((partName: string) => ApplicationUtils.capitalizeFirstLetter(partName))
-                    .join(foundDelimiter)
-            }
-
-            return resultName
+    static capitalizeName(name: string | undefined | null): string {
+        if (!name) {
+            return ''
         }
 
-        return ApplicationUtils.capitalizeFirstLetter(resultName)
+        const hyphenNameDelimiter = '-'
+
+        return name
+            .split(/([ -])/)
+            .map((partName) => partName.toLowerCase())
+            .map((partName, indx, array) => {
+                const prevDelimiter = array[indx - 1]
+                if (prevDelimiter === hyphenNameDelimiter && this.nameComponentsToLowerCase.includes(partName)) {
+                    return partName
+                }
+
+                return ApplicationUtils.capitalizeFirstLetter(partName)
+            })
+            .join('')
     }
 
     static capitalizeFirstLetter(str: string): string {
@@ -488,6 +508,44 @@ export class ApplicationUtils {
         return input.replaceAll(/[^\da-zа-яєіїґ]/gi, '')
     }
 
+    /**
+     * Returns the appropriate plural form of a string based on the specified numeric value and locale.
+     * Uses the pluralization rules for the provided locale to determine the correct form among the options.
+     *
+     * @param value - The number used to determine the plural form.
+     * @param one - The form for singular (e.g., "one item").
+     * @param few - The form for a few items (e.g., "few items").
+     * @param many - The form for many items (e.g., "many items").
+     * @param other - Optional. The fallback form if none of the specific plural rules match.
+     *                           Defaults to the 'many' form if not provided.
+     * @param locale - The locale used for pluralization rules. Defaults to 'uk' (Ukrainian).
+     * @returns The appropriate pluralized string based on the value.
+     *
+     * @example
+     * getPluralForm(1, 'яблуко', 'яблука', 'яблук'); // 'яблуко'
+     * getPluralForm(2, 'яблуко', 'яблука', 'яблук'); // 'яблука'
+     * getPluralForm(0, 'яблуко', 'яблука', 'яблук', 'плоди'); // 'плоди'
+     * getPluralForm(0, 'яблуко', 'яблука', 'яблук'); // 'яблук' (uses 'many' as default fallback)
+     */
+    static pluralizeString(value: number, one: string, few: string, many: string, other?: string, locale = 'uk'): string {
+        const rules = new Intl.PluralRules(locale)
+
+        switch (rules.select(value)) {
+            case 'one': {
+                return one
+            }
+            case 'few': {
+                return few
+            }
+            case 'many': {
+                return many
+            }
+            default: {
+                return other || many
+            }
+        }
+    }
+
     private static mod97(string: string): number {
         let checksum: string | number = string.slice(0, 2)
         let fragment: string
@@ -496,7 +554,7 @@ export class ApplicationUtils {
             checksum = Number.parseInt(fragment, 10) % 97
         }
 
-        return <number>checksum
+        return checksum as number
     }
 
     private static toApiError(err: Error & { code?: number; data?: ErrorData; type?: ErrorType }): ApiError {

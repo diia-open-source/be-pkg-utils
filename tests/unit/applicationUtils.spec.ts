@@ -1,5 +1,6 @@
 import { ToRelativeUnit } from 'luxon'
 import { WithAppVersionsEntity } from 'tests/interfaces'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { ApiError, BadRequestError } from '@diia-inhouse/errors'
 import TestKit from '@diia-inhouse/test'
@@ -433,7 +434,7 @@ describe('ApplicationUtils', () => {
         const mockedCurrentDate = new Date('2023-03-01')
 
         beforeEach(() => {
-            jest.useFakeTimers().setSystemTime(mockedCurrentDate)
+            vi.useFakeTimers().setSystemTime(mockedCurrentDate)
         })
 
         it.each([
@@ -442,7 +443,7 @@ describe('ApplicationUtils', () => {
             [227, 'months', '24.03.2004'],
             [6916, 'days', '24.03.2004'],
         ])('should return %d %s', (count, relativeUnit, birthdayDate) => {
-            const result = ApplicationUtils.getAge(birthdayDate, 'dd.MM.yyyy', <ToRelativeUnit>relativeUnit)
+            const result = ApplicationUtils.getAge(birthdayDate, 'dd.MM.yyyy', relativeUnit as ToRelativeUnit)
 
             expect(result).toBe(count)
         })
@@ -493,7 +494,7 @@ describe('ApplicationUtils', () => {
             [SessionType.ServiceEntrance, 'entrance'],
             [SessionType.ServiceUser, 'serviceUser'],
         ])('should make %s session', (sessionType, fieldData) => {
-            const data = <TokenData>{ sessionType }
+            const data = { sessionType } as TokenData
 
             const result = ApplicationUtils.makeSession(data)
 
@@ -504,9 +505,9 @@ describe('ApplicationUtils', () => {
         })
 
         it('should throw error', () => {
-            const invalidData = <TokenData>{
-                sessionType: <SessionType>'unknownType',
-            }
+            const invalidData = {
+                sessionType: 'unknownType' as SessionType,
+            } as TokenData
 
             expect(() => {
                 ApplicationUtils.makeSession(invalidData)
@@ -635,7 +636,7 @@ describe('ApplicationUtils', () => {
             const signedItems = [{ name: 'file1', signature: 'signature1' }]
 
             expect(() => {
-                ApplicationUtils.toHashedFilesWithSignatures(<HashedFile[]>hashedFiles, signedItems)
+                ApplicationUtils.toHashedFilesWithSignatures(hashedFiles as HashedFile[], signedItems)
             }).toThrow('Number of hashed files and signed elements are not matched')
         })
 
@@ -644,7 +645,7 @@ describe('ApplicationUtils', () => {
             const signedItems = [{ name: 'file2', signature: 'signature1' }]
 
             expect(() => {
-                ApplicationUtils.toHashedFilesWithSignatures(<HashedFile[]>hashedFiles, signedItems)
+                ApplicationUtils.toHashedFilesWithSignatures(hashedFiles as HashedFile[], signedItems)
             }).toThrow("Provided name doesn't match with a hashed file: file2")
         })
 
@@ -661,7 +662,7 @@ describe('ApplicationUtils', () => {
             ]
             const expectedSignatures = ['signature1', 'signature2']
 
-            const result = ApplicationUtils.toHashedFilesWithSignatures(<HashedFile[]>hashedFiles, signedItems)
+            const result = ApplicationUtils.toHashedFilesWithSignatures(hashedFiles as HashedFile[], signedItems)
 
             expect(result[0]).toEqual(expectedFilesWithSignatures)
             expect(result[1]).toEqual(expectedSignatures)
@@ -752,29 +753,39 @@ describe('ApplicationUtils', () => {
     })
 
     describe('capitalizeName', () => {
-        it('should capitalize the first letter of each word in the name', () => {
-            const name = 'john doe'
-            const expected = 'John Doe'
-
-            const result = ApplicationUtils.capitalizeName(name)
-
-            expect(result).toBe(expected)
-        })
-
-        it('should handle names with delimiters and capitalize each word', () => {
-            const name = 'mary-anne smith'
-            const expected = 'Mary-Anne Smith'
-
-            const result = ApplicationUtils.capitalizeName(name)
-
-            expect(result).toBe(expected)
-        })
-
-        it('should return an empty string if the name is null or undefined', () => {
-            const name = ''
-            const expected = ''
-
-            const result = ApplicationUtils.capitalizeName(name)
+        it.each([
+            {
+                case: 'capitalize the first letter of each word in the name',
+                input: 'john doe',
+                expected: 'John Doe',
+            },
+            {
+                case: 'handle names with delimiters and capitalize each word',
+                input: 'mary-ANNE smith',
+                expected: 'Mary-Anne Smith',
+            },
+            {
+                case: 'return an empty string if the name is empty',
+                input: '',
+                expected: '',
+            },
+            {
+                case: 'return an empty string if the name is null',
+                input: null,
+                expected: '',
+            },
+            {
+                case: 'return an empty string if the name is undefined',
+                input: undefined,
+                expected: '',
+            },
+            {
+                case: 'not capitalize Arabic/Persian/Turkic name parts after dash when useNameComponentsToLowerCase is true',
+                input: 'Ядзізж-ОГЛИ заде Дія Надія',
+                expected: 'Ядзізж-огли Заде Дія Надія',
+            },
+        ])('should $case', ({ input, expected }) => {
+            const result = ApplicationUtils.capitalizeName(input)
 
             expect(result).toBe(expected)
         })
@@ -789,7 +800,7 @@ describe('ApplicationUtils', () => {
             [undefined, ''],
             [[], ''],
         ])('%s => %s', (input, expectedResult) => {
-            expect(ApplicationUtils.capitalizeFirstLetter(<string>input)).toBe(expectedResult)
+            expect(ApplicationUtils.capitalizeFirstLetter(input as string)).toBe(expectedResult)
         })
     })
 
@@ -815,7 +826,7 @@ describe('ApplicationUtils', () => {
         it('should return empty string in case received argument is not a string type', () => {
             const expected = ''
 
-            const result = ApplicationUtils.lowerFirstLetter(<string>{})
+            const result = ApplicationUtils.lowerFirstLetter({} as string)
 
             expect(result).toBe(expected)
         })

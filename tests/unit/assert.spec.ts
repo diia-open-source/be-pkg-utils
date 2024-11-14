@@ -1,3 +1,5 @@
+import { describe, expect, it } from 'vitest'
+
 import { TokenData } from '@diia-inhouse/types'
 
 import { Asserts } from '../../src/asserts'
@@ -5,7 +7,7 @@ import { Asserts } from '../../src/asserts'
 describe('Asserts', () => {
     describe('assertIsRefreshTokenExists', () => {
         it('should not throw error', () => {
-            const tokenData = <TokenData>{ refreshToken: {} }
+            const tokenData = { refreshToken: {} } as TokenData
 
             const checkIsRefreshTokenExists = (): void => {
                 Asserts.isRefreshTokenExists(tokenData)
@@ -15,7 +17,7 @@ describe('Asserts', () => {
         })
 
         it('should throw error', () => {
-            const tokenData = <TokenData>{}
+            const tokenData = {} as TokenData
 
             const checkIsRefreshTokenExists = (): void => {
                 Asserts.isRefreshTokenExists(tokenData)

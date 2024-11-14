@@ -1,3 +1,5 @@
+import { describe, expect, it } from 'vitest'
+
 import { GrpcStatusCode } from '@diia-inhouse/types'
 
 import { NetworkUtils } from '../../src/network'

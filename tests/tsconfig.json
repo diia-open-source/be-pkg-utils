@@ -3,7 +3,10 @@
     "compilerOptions": {
         "baseUrl": "../",
         "noEmit": true,
-        "strict": true
+        "strict": true,
+        "module": "ESNext",
+        "moduleResolution": "Bundler",
+        "isolatedModules": true
     },
-    "include": ["./**/*"]
+    "include": ["./**/*", "../vitest.config.mts"]
 }

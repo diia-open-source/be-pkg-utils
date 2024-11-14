@@ -1,3 +1,5 @@
+import { describe, expect, it } from 'vitest'
+
 import { DurationMs } from '@diia-inhouse/types'
 
 import { IntegrationUtils } from '../../src/integration'

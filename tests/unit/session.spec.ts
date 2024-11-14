@@ -1,3 +1,5 @@
+import { describe, expect, it } from 'vitest'
+
 import { AuthDocumentType, DiiaOfficeStatus, Gender, ProfileFeature, SessionType, UserTokenData } from '@diia-inhouse/types'
 
 import { extractProfileFeatures } from '../../src'
