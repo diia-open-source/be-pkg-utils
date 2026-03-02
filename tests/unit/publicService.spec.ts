@@ -1,15 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
+import { ContactsResponse, DSBodyItem } from '@diia-inhouse/design-system'
 import TestKit from '@diia-inhouse/test'
-import {
-    ContactsResponse,
-    PlatformType,
-    PublicServiceContextMenu,
-    PublicServiceContextMenuType,
-    PublicServiceSettings,
-} from '@diia-inhouse/types'
-import { DSBodyItem } from '@diia-inhouse/types/dist/types/generated/designSystem/item'
-import { emailRuValidation, emailValidation, phoneNumberValidation } from '@diia-inhouse/validators'
+import { emailRuValidation, emailValidation, phoneNumberWithoutPlusValidation } from '@diia-inhouse/validators'
 
 import { PublicServiceUtils } from '../../src'
 import { AuthProviderName } from '../../src/interfaces/publicService'
@@ -60,7 +53,7 @@ describe('Public service utils', () => {
                                 mandatory: true,
                                 inputCode: 'phone',
                                 codeValueIsEditable: false,
-                                codeValueId: 'UA',
+                                codeValueId: 'ua',
                                 inputPhoneMlc: {
                                     componentId: 'phone',
                                     value: '123123',
@@ -68,14 +61,14 @@ describe('Public service utils', () => {
                                 },
                                 codes: [
                                     {
-                                        id: 'UA',
+                                        id: 'ua',
                                         maskCode: '## ### ####',
                                         placeholder: '00 000 0000',
                                         label: '+380',
                                         description: '🇺🇦 Україна (+380)',
-                                        value: '+380',
+                                        value: '380',
                                         icon: '🇺🇦',
-                                        validation: [phoneNumberValidation],
+                                        validation: [phoneNumberWithoutPlusValidation],
                                     },
                                 ],
                             },
@@ -119,7 +112,7 @@ describe('Public service utils', () => {
                                 mandatory: true,
                                 inputCode: 'phone',
                                 codeValueIsEditable: false,
-                                codeValueId: 'UA',
+                                codeValueId: 'ua',
                                 inputPhoneMlc: {
                                     componentId: 'phone',
                                     value: '',
@@ -127,14 +120,14 @@ describe('Public service utils', () => {
                                 },
                                 codes: [
                                     {
-                                        id: 'UA',
+                                        id: 'ua',
                                         maskCode: '## ### ####',
                                         placeholder: '00 000 0000',
                                         label: '+380',
                                         description: '🇺🇦 Україна (+380)',
-                                        value: '+380',
+                                        value: '380',
                                         icon: '🇺🇦',
-                                        validation: [phoneNumberValidation],
+                                        validation: [phoneNumberWithoutPlusValidation],
                                     },
                                 ],
                             },
@@ -201,70 +194,47 @@ describe('Public service utils', () => {
         })
     })
 
-    describe('extractContextMenu', () => {
-        it('should filter by app versions and return context menu', () => {
-            const validContextMenu = {
-                name: 'name',
-                type: PublicServiceContextMenuType.assistantScreen,
-                appVersions: {
-                    maxVersion: { [PlatformType.Android]: '12.0.0' },
-                    minVersion: { [PlatformType.Android]: '1.0.0' },
-                    versions: {
-                        Android: ['13'],
-                        Browser: [],
-                        Huawei: [],
-                        iOS: [],
-                    },
-                },
-            } as PublicServiceContextMenu
+    describe('extractPhoneNumber', () => {
+        it('should successfully extract valid phone number', () => {
+            const result = PublicServiceUtils.extractPhoneNumber('380123456789', 'ua')
 
-            expect(
-                PublicServiceUtils.extractContextMenu({ contextMenu: [validContextMenu] } as PublicServiceSettings, {
-                    appVersion: '2.0.0',
-                    platformType: PlatformType.Android,
-                    platformVersion: '13',
-                }),
-            ).toEqual([validContextMenu])
+            expect(result).toBe('123456789')
         })
 
-        it('should not extract context menu in case it is undefined', () => {
-            expect(
-                PublicServiceUtils.extractContextMenu({} as PublicServiceSettings, {
-                    appVersion: '2.0.0',
-                    platformType: PlatformType.Android,
-                    platformVersion: '13',
-                }),
-            ).toBeUndefined()
+        it('should successfully extract valid phone number with plus prefix', () => {
+            const result = PublicServiceUtils.extractPhoneNumber('+380123456789', 'ua')
+
+            expect(result).toBe('123456789')
         })
-    })
 
-    describe('extractNavigationPanel', () => {
-        it('should successfully extract navigation pannel', () => {
-            const validContextMenu = {
-                name: 'Navigation',
-                type: PublicServiceContextMenuType.assistantScreen,
-                appVersions: {
-                    maxVersion: { [PlatformType.Android]: '12.0.0' },
-                    minVersion: { [PlatformType.Android]: '1.0.0' },
-                    versions: {
-                        Android: ['13'],
-                        Browser: [],
-                        Huawei: [],
-                        iOS: [],
-                    },
-                },
-            } as PublicServiceContextMenu
+        it('should throw error when country code is invalid', () => {
+            expect(() => {
+                PublicServiceUtils.extractPhoneNumber('380123456789', 'invalid')
+            }).toThrow('Invalid country code')
+        })
 
-            expect(
-                PublicServiceUtils.extractNavigationPanel(
-                    { name: 'Navigation', contextMenu: [validContextMenu] } as PublicServiceSettings,
-                    {
-                        appVersion: '2.0.0',
-                        platformType: PlatformType.Android,
-                        platformVersion: '13',
-                    },
-                ),
-            ).toEqual({ header: 'Navigation', contextMenu: [validContextMenu] })
+        it('should throw error when phone number does not start with country code', () => {
+            expect(() => {
+                PublicServiceUtils.extractPhoneNumber('48123456789', 'ua')
+            }).toThrow('Phone number must start with country code 380')
+        })
+
+        it('should throw error when phone number contains non-digit characters', () => {
+            expect(() => {
+                PublicServiceUtils.extractPhoneNumber('380abc123456', 'ua')
+            }).toThrow('Phone number must contain only digits')
+        })
+
+        it('should work with different country codes', () => {
+            const result = PublicServiceUtils.extractPhoneNumber('48123456789', 'pl')
+
+            expect(result).toBe('123456789')
+        })
+
+        it('should throw error when phone contains spaces', () => {
+            expect(() => {
+                PublicServiceUtils.extractPhoneNumber('380 123 456 789', 'ua')
+            }).toThrow('Phone number must contain only digits')
         })
     })
 })

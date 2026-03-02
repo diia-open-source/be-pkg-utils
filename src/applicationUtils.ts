@@ -1,8 +1,13 @@
-import { compare } from 'compare-versions'
-import { camelCase, kebabCase } from 'lodash'
-import { DateTime, ToRelativeUnit } from 'luxon'
+import fs from 'node:fs'
+import path from 'node:path'
 
-import { ApiError, BadRequestError, ErrorData, ErrorType } from '@diia-inhouse/errors'
+import { compare } from 'compare-versions'
+import { camelCase, cloneDeep, kebabCase, startCase } from 'lodash'
+import { DateTime, ToRelativeUnit } from 'luxon'
+import mapAgeCleaner from 'map-age-cleaner'
+import { PackageJson } from 'type-fest'
+
+import { ApiError, BadRequestError } from '@diia-inhouse/errors'
 import {
     ActHeaders,
     ActionSession,
@@ -19,6 +24,9 @@ import {
     UserTokenData,
     WithAppVersions,
 } from '@diia-inhouse/types'
+
+import { ProcessObjectCallback } from './interfaces/applicationUtils'
+import { OriginError } from './interfaces/error'
 
 export class ApplicationUtils {
     private static documentTypeToCamelCaseExceptions: Record<string, string> = {
@@ -134,20 +142,25 @@ export class ApplicationUtils {
             return ''
         }
 
-        const hyphenNameDelimiter = '-'
+        const loweredNameParts = name.toLowerCase().split(' ')
+        if (loweredNameParts.length === 1) {
+            const [namePart] = loweredNameParts
 
-        return name
-            .split(/([ -])/)
-            .map((partName) => partName.toLowerCase())
-            .map((partName, indx, array) => {
-                const prevDelimiter = array[indx - 1]
-                if (prevDelimiter === hyphenNameDelimiter && this.nameComponentsToLowerCase.includes(partName)) {
-                    return partName
-                }
+            if (this.nameComponentsToLowerCase.includes(namePart)) {
+                return this.capitalizeFirstLetter(namePart)
+            }
+        }
 
-                return ApplicationUtils.capitalizeFirstLetter(partName)
-            })
-            .join('')
+        return loweredNameParts
+            .map((word) =>
+                word
+                    .split('-')
+                    .map((namePart) =>
+                        this.nameComponentsToLowerCase.includes(namePart) ? namePart : this.capitalizeFirstLetter(namePart),
+                    )
+                    .join('-'),
+            )
+            .join(' ')
     }
 
     static capitalizeFirstLetter(str: string): string {
@@ -182,6 +195,9 @@ export class ApplicationUtils {
             .join('')
     }
 
+    /**
+     * Validates the Ukrainian IBAN number by format and checksum.
+     */
     static isIbanNumberValid(iban: string): boolean {
         const CODE_LENGTHS: Record<string, number> = {
             UA: 29,
@@ -199,6 +215,19 @@ export class ApplicationUtils {
         })
 
         return this.mod97(digits) === 1
+    }
+
+    /**
+     * Extracts the bank code (МФО) from Ukrainian IBAN (4-10 digits). Does not validate the IBAN.
+     *
+     * @link https://en.wikipedia.org/wiki/International_Bank_Account_Number#IBAN_formats_by_country
+     * @example
+     * ```typescript
+     * const bankCode = extractBankCodeFromIban('UA833052991234567890123456789') // '305299'
+     * ```
+     */
+    static extractBankCodeFromIban(iban: string): string {
+        return iban.slice(4, 10)
     }
 
     static getStreetName(street: string, streetType: string): string {
@@ -267,9 +296,6 @@ export class ApplicationUtils {
             case SessionType.EResidentApplicant: {
                 return { sessionType, user: data }
             }
-            case SessionType.CabinetUser: {
-                return { sessionType, user: data }
-            }
             case SessionType.Acquirer: {
                 return { sessionType, acquirer: data }
             }
@@ -310,18 +336,23 @@ export class ApplicationUtils {
      * Get age from birth date. Powered by {@link https://moment.github.io/luxon/#/ luxon}
      *
      * @param birthDay Input birth date.
-     * @param format `birthDay` format (https://moment.github.io/luxon/#/formatting?id=table-of-tokens). Default - 'dd.MM.yyyy'
-     * @param unitOfTime Unit of time to return. Default - 'years'
+     * @param params Additional parameters. Default: `{ format: 'dd.MM.yyyy', unitOfTime: 'years' }`
+     * @param params.format Input date format (https://moment.github.io/luxon/#/formatting?id=table-of-tokens). Default - 'dd.MM.yyyy'
+     * @param params.unitOfTime Unit of time to get the difference in. Default - 'years'
+     * @param params.relativeTo Date to compare the input date to. Default - current date
      *
      * @returns Age in years if other `unitOfTime` is not specified
      * @throws If input date is invalid
      */
-    static getAge(birthDay: string, format = 'dd.MM.yyyy', unitOfTime: ToRelativeUnit = 'years'): number {
-        const birthdayDate = DateTime.fromFormat(birthDay, format)
+    static getAge(birthDay: string, params: { format?: string; unitOfTime?: ToRelativeUnit; relativeTo?: string } = {}): number {
+        const { format = 'dd.MM.yyyy', unitOfTime = 'years', relativeTo } = params
 
+        const birthdayDate = DateTime.fromFormat(birthDay, format)
         if (!birthdayDate.isValid) {
             throw new Error('Invalid user birthday')
         }
+
+        const fromDate = relativeTo ? DateTime.fromISO(relativeTo) : DateTime.now()
 
         /* Added an array of "units" with milliseconds to ensure that all larger unit values are integers.
             For instance:
@@ -332,7 +363,7 @@ export class ApplicationUtils {
                 DateTime.now().diff(birthdayDate, ['years', 'milliseconds'])['years'] => 14
                 DateTime.now().diff(birthdayDate, ['months', 'milliseconds'])['months'] => 168
         */
-        return DateTime.now().diff(birthdayDate, [unitOfTime, 'milliseconds'])[unitOfTime]
+        return fromDate.diff(birthdayDate, [unitOfTime, 'milliseconds'])[unitOfTime]
     }
 
     static getFullName(lastName: string, firstName: string, middleName?: string, separator = ' '): string {
@@ -546,6 +577,191 @@ export class ApplicationUtils {
         }
     }
 
+    /**
+     * Returns the name of a service from a package.json in the current working directory (process.cwd()) converted to PascalCase.
+     * If the name is scoped, it will be returned without the scope.
+     * If the name is not found, an empty string is returned. Also, all whitespace characters are removed.
+     *
+     * @returns The name of the service in PascalCase.
+     *
+     * @example
+     * getServiceName() // 'my-service' -> 'MyService'
+     * getServiceName() // '@scope/my-service' -> 'MyService'
+     */
+    static getServiceName(): string {
+        try {
+            const packageName = this.getPackageJson().name || ''
+
+            let nameWithoutScope = packageName
+            if (packageName.startsWith('@')) {
+                const parts = packageName.split('/')
+                if (parts.length > 1) {
+                    nameWithoutScope = parts[1]
+                }
+            }
+
+            return startCase(camelCase(nameWithoutScope)).replaceAll(/\s/g, '')
+        } catch {
+            return ''
+        }
+    }
+
+    /**
+     * Returns the version of a service from a package.json in the current working directory (process.cwd()).
+     * If the version is not found, an empty string is returned.
+     *
+     * @returns The version of the service.
+     *
+     * @example
+     * getServiceVersion() // '1.143.0-rc.2'
+     */
+    static getServiceVersion(): string {
+        try {
+            const packageJson = this.getPackageJson()
+
+            return packageJson.version || ''
+        } catch {
+            return ''
+        }
+    }
+
+    /**
+     * Format string according to mask pattern
+     *
+     * Basic Examples:
+     * '12345' with '##-###'    -> '12-345'
+     * 'AB345' with '##-###'    -> 'AB-345'
+     * '123456' with '##.####'  -> '12.3456'
+     * '12345' with '### ##'    -> '123 45'
+     * 'ABCDEF' with '##-##-##' -> 'AB-CD-EF'
+     */
+    static formatMask(rawData: string, mask: string): string {
+        if (!rawData || !mask) {
+            return rawData
+        }
+
+        let result = ''
+        let dataIndex = 0
+
+        for (const element of mask) {
+            if (dataIndex >= rawData.length) {
+                break
+            }
+
+            if (element === '#') {
+                result += rawData[dataIndex]
+                dataIndex++
+            } else {
+                result += element
+            }
+        }
+
+        result += rawData.slice(dataIndex)
+
+        return result
+    }
+
+    /**
+     * Memoize a function.
+     * The function is memoized by the arguments (`JSON.stringify(args)`) and the result is cached for the specified time to live in milliseconds.
+     * If the function is called with the same arguments again, the cached result is returned.
+     * If the function is called with the same arguments again after the time to live has expired, the function is called again and the result is cached again.
+     *
+     * @param fn - The function to memoize.
+     * @param ttl - The time to live for the cached value in milliseconds.
+     * @returns The memoized function.
+     */
+    static memoize<T extends (...args: Parameters<T>) => ReturnType<T>>(fn: T, ttl = Infinity): T {
+        const promiseCache = new Map<string, ReturnType<T>>()
+        const cache = new Map<string, { data: ReturnType<T> | Awaited<ReturnType<T>>; maxAge: number }>()
+
+        mapAgeCleaner(cache)
+
+        const memoized = (async (...args) => {
+            const key = JSON.stringify(args)
+            const cachedPromise = promiseCache.get(key)
+            if (cachedPromise) {
+                return cachedPromise
+            }
+
+            const cachedValue = cache.get(key)
+            if (cachedValue) {
+                return cachedValue.data
+            }
+
+            try {
+                const promise = fn(...args)
+
+                promiseCache.set(key, promise)
+                const result = await promise
+
+                cache.set(key, { data: result, maxAge: Date.now() + ttl })
+
+                return result
+            } finally {
+                promiseCache.delete(key)
+            }
+        }) as T
+
+        return memoized
+    }
+
+    /**
+     * Recursively encodes all string values in an object or string using encodeURIComponent.
+     * For objects, it creates a deep clone and processes all string values.
+     * For strings, it directly applies the encoding.
+     *
+     * @param data Input data to encode - can be an object or string
+     * @returns Deep cloned object with encoded string values, or encoded string if input was string
+     * @example
+     * ```typescript
+     * const data = { name: 'John Doe', email: 'john@example.com' }
+     * const encoded = ApplicationUtils.encodeValuesWithIterator(data)
+     * // Result: { name: 'John%20Doe', email: 'john%40example.com' }
+     * ```
+     */
+    static encodeValuesWithIterator(data: object | string): object | string {
+        return this.processValues(data, encodeURIComponent)
+    }
+
+    /**
+     * Recursively decodes all string values in an object or string using decodeURIComponent.
+     * For objects, it creates a deep clone and processes all string values.
+     * For strings, it directly applies the decoding.
+     *
+     * @param data Input data to decode - can be an object or string
+     * @returns Deep cloned object with decoded string values, or decoded string if input was string
+     * @example
+     * ```typescript
+     * const data = { name: 'John%20Doe', email: 'john%40example.com' }
+     * const decoded = ApplicationUtils.decodeValuesWithIterator(data)
+     * // Result: { name: 'John Doe', email: 'john@example.com' }
+     * ```
+     */
+    static decodeValuesWithIterator(data: object | string): object | string {
+        return this.processValues(data, decodeURIComponent)
+    }
+
+    static removeUnderscoreFields<T>(value: T): T {
+        if (Array.isArray(value)) {
+            return value.map((item) => this.removeUnderscoreFields(item)) as T
+        }
+
+        if (typeof value === 'object' && value !== null) {
+            const objectField: Record<string, unknown> = {}
+            for (const key in value) {
+                if (!key.startsWith('_')) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    objectField[key] = this.removeUnderscoreFields((value as any)[key])
+                }
+            }
+
+            return objectField as T
+        }
+
+        return value
+    }
+
     private static mod97(string: string): number {
         let checksum: string | number = string.slice(0, 2)
         let fragment: string
@@ -557,9 +773,74 @@ export class ApplicationUtils {
         return checksum as number
     }
 
-    private static toApiError(err: Error & { code?: number; data?: ErrorData; type?: ErrorType }): ApiError {
-        const { type, code, message, data } = err
+    private static toApiError(err: OriginError): ApiError {
+        const { type, code, message, data = {}, keyValue } = err
+        const processCode = data.processCode
 
-        return new ApiError(message, code || HttpStatusCode.INTERNAL_SERVER_ERROR, data, data?.processCode, type)
+        if (code === 11000 && keyValue) {
+            data.keyValue = keyValue
+        }
+
+        return new ApiError(message, code || HttpStatusCode.INTERNAL_SERVER_ERROR, data, processCode, type)
+    }
+
+    private static getPackageJson(): PackageJson {
+        const packageJsonPath = path.resolve(process.cwd(), 'package.json')
+
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        return JSON.parse(fs.readFileSync(packageJsonPath, 'utf8')) // nosemgrep: eslint.detect-non-literal-fs-filename
+    }
+
+    private static processObject(obj: unknown, processor: ProcessObjectCallback): unknown {
+        if (typeof obj === 'string') {
+            try {
+                return processor(obj)
+            } catch {
+                return obj
+            }
+        }
+
+        if (Array.isArray(obj)) {
+            return obj.map((item) => {
+                return this.processObject(item, processor)
+            })
+        }
+
+        if (obj && typeof obj === 'object') {
+            if (
+                obj instanceof Date ||
+                obj instanceof RegExp ||
+                obj instanceof Map ||
+                obj instanceof Set ||
+                obj instanceof Error ||
+                obj instanceof URL ||
+                obj instanceof URLSearchParams
+            ) {
+                return obj
+            }
+
+            const result: Record<string, unknown> = {}
+            for (const [key, value] of Object.entries(obj)) {
+                result[key] = this.processObject(value, processor)
+            }
+
+            return result
+        }
+
+        return obj
+    }
+
+    private static processValues(data: object | string, processor: ProcessObjectCallback): object | string {
+        if (typeof data === 'string') {
+            try {
+                return processor(data)
+            } catch {
+                return data
+            }
+        }
+
+        const clonedData = cloneDeep(data)
+
+        return this.processObject(clonedData, processor) as object | string
     }
 }

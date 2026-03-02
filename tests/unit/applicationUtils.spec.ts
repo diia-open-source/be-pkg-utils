@@ -1,3 +1,7 @@
+import fs from 'node:fs'
+import path from 'node:path'
+import { setTimeout as delay } from 'node:timers/promises'
+
 import { ToRelativeUnit } from 'luxon'
 import { WithAppVersionsEntity } from 'tests/interfaces'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -6,6 +10,7 @@ import { ApiError, BadRequestError } from '@diia-inhouse/errors'
 import TestKit from '@diia-inhouse/test'
 import {
     ActionVersion,
+    DurationMs,
     Gender,
     HashedFile,
     HttpStatusCode,
@@ -17,6 +22,9 @@ import {
 } from '@diia-inhouse/types'
 
 import { ApplicationUtils } from '../../src/applicationUtils'
+
+vi.mock('node:fs')
+vi.mock('node:path')
 
 const checkFormatDate = (): void => {
     ApplicationUtils.formatDate('21/01/2023', 'dd-MM-yyyy', 'dd.MM.yyyy')
@@ -116,6 +124,22 @@ describe('ApplicationUtils', () => {
             expect(result.message).toEqual(errorMessage)
         })
 
+        it('should return ApiError with custom fields if custom fields exists in error', () => {
+            const errorMessage = 'Some error has been happened here'
+            const customPropValue = { testKey: 'testValue' }
+
+            const e = new Error(errorMessage)
+
+            Object.defineProperty(e, 'code', { value: 11000 })
+            Object.defineProperty(e, 'keyValue', { value: customPropValue, enumerable: true })
+
+            const result = ApplicationUtils.handleError(e, (error) => error)
+
+            expect(result).toBeInstanceOf(ApiError)
+            expect(result.getData().keyValue).toEqual(customPropValue)
+            expect(result.message).toEqual(errorMessage)
+        })
+
         it('should return ApiError when usual error provided with async callback', async () => {
             const errorMessage = 'Some error has been happened here'
 
@@ -154,7 +178,7 @@ describe('ApplicationUtils', () => {
             const error = new BadRequestError('errorMessage', { processCode })
 
             const result = ApplicationUtils.handleError(error, (err) => {
-                return err.getCode()
+                return err.getProcessCode()
             })
 
             expect(processCode).toEqual(result)
@@ -165,20 +189,20 @@ describe('ApplicationUtils', () => {
             const error = new BadRequestError('errorMessage', {}, processCode)
 
             const result = ApplicationUtils.handleError(error, (err) => {
-                return err.getCode()
+                return err.getProcessCode()
             })
 
             expect(processCode).toEqual(result)
         })
 
-        it('should return 500 code, when code is undefined', async () => {
+        it('should return undefined, when code is undefined', async () => {
             const error = new Error('errorMessage')
 
             const result = ApplicationUtils.handleError(error, (err) => {
-                return err.getCode()
+                return err.getProcessCode()
             })
 
-            expect(result).toEqual(HttpStatusCode.INTERNAL_SERVER_ERROR)
+            expect(result).toBeUndefined()
         })
     })
 
@@ -439,11 +463,21 @@ describe('ApplicationUtils', () => {
 
         it.each([
             [18, 'years', '24.03.2004'],
+            [18, 'years', '24.03.2004'],
             [75, 'quarters', '24.03.2004'],
             [227, 'months', '24.03.2004'],
             [6916, 'days', '24.03.2004'],
         ])('should return %d %s', (count, relativeUnit, birthdayDate) => {
-            const result = ApplicationUtils.getAge(birthdayDate, 'dd.MM.yyyy', relativeUnit as ToRelativeUnit)
+            const result = ApplicationUtils.getAge(birthdayDate, { unitOfTime: relativeUnit as ToRelativeUnit })
+
+            expect(result).toBe(count)
+        })
+
+        it.each([
+            [19, '2024-12-01', '02.12.2004'],
+            [20, '2024-12-01', '01.12.2004'],
+        ])('should return %d when relativeTo date is %s', (count, relativeTo, birthdayDate) => {
+            const result = ApplicationUtils.getAge(birthdayDate, { relativeTo })
 
             expect(result).toBe(count)
         })
@@ -486,7 +520,6 @@ describe('ApplicationUtils', () => {
             [SessionType.User, 'user'],
             [SessionType.EResident, 'user'],
             [SessionType.EResidentApplicant, 'user'],
-            [SessionType.CabinetUser, 'user'],
             [SessionType.PortalUser, 'user'],
             [SessionType.Acquirer, 'acquirer'],
             [SessionType.Partner, 'partner'],
@@ -528,6 +561,15 @@ describe('ApplicationUtils', () => {
             const amount = 9876543.21
             const units = Units.Hryvnia
             const expected = '9 876 543,21 грн'
+
+            const result = ApplicationUtils.formatAmountWithThousandsSeparator(amount, units)
+
+            expect(result.replaceAll(/\s/g, ' ')).toBe(expected)
+        })
+        it('format amount without pennies with empty optional arguments', () => {
+            const amount = 9876543
+            const units = Units.Hryvnia
+            const expected = '9 876 543 грн'
 
             const result = ApplicationUtils.formatAmountWithThousandsSeparator(amount, units)
 
@@ -607,6 +649,17 @@ describe('ApplicationUtils', () => {
             const expected = false
 
             const result = ApplicationUtils.isIbanNumberValid(iban)
+
+            expect(result).toBe(expected)
+        })
+    })
+
+    describe('extractBankCodeFromIban', () => {
+        it('should extract bank code from a valid IBAN number', () => {
+            const iban = 'UA833052991234567890123456789'
+            const expected = '305299'
+
+            const result = ApplicationUtils.extractBankCodeFromIban(iban)
 
             expect(result).toBe(expected)
         })
@@ -765,6 +818,11 @@ describe('ApplicationUtils', () => {
                 expected: 'Mary-Anne Smith',
             },
             {
+                case: 'handle name only with delimiters and capitalize each word',
+                input: 'АННА-КАРІНА',
+                expected: 'Анна-Каріна',
+            },
+            {
                 case: 'return an empty string if the name is empty',
                 input: '',
                 expected: '',
@@ -780,9 +838,19 @@ describe('ApplicationUtils', () => {
                 expected: '',
             },
             {
-                case: 'not capitalize Arabic/Persian/Turkic name parts after dash when useNameComponentsToLowerCase is true',
+                case: 'not capitalize Arabic/Persian/Turkic name parts after dash',
                 input: 'Ядзізж-ОГЛИ заде Дія Надія',
-                expected: 'Ядзізж-огли Заде Дія Надія',
+                expected: 'Ядзізж-огли заде Дія Надія',
+            },
+            {
+                case: 'not capitalize Arabic/Persian/Turkic name parts',
+                input: 'Ядзізж ОГЛИ заде Дія Надія',
+                expected: 'Ядзізж огли заде Дія Надія',
+            },
+            {
+                case: 'capitalize the first letter of the name if it is a single word and Arabic/Persian/Turkic',
+                input: 'БЕЙ',
+                expected: 'Бей',
             },
         ])('should $case', ({ input, expected }) => {
             const result = ApplicationUtils.capitalizeName(input)
@@ -912,6 +980,287 @@ describe('ApplicationUtils', () => {
             ['Надія Володимирівна-Дія', 'НадіяВолодимирівнаДія'],
         ])('should sanitize %s to %s', (input, result) => {
             expect(ApplicationUtils.sanitizeString(input)).toEqual(result)
+        })
+    })
+
+    describe('formatMask', () => {
+        it('should format numeric data according to ##-### mask', () => {
+            expect(ApplicationUtils.formatMask('12345', '##-###')).toBe('12-345')
+        })
+
+        it('should format alphanumeric data according to ##-### mask', () => {
+            expect(ApplicationUtils.formatMask('AB345', '##-###')).toBe('AB-345')
+            expect(ApplicationUtils.formatMask('12CDE', '##-###')).toBe('12-CDE')
+        })
+
+        it('should format data according to #### mask', () => {
+            expect(ApplicationUtils.formatMask('1234', '####')).toBe('1234')
+            expect(ApplicationUtils.formatMask('ABCD', '####')).toBe('ABCD')
+        })
+
+        it('should format numeric data according to ##.#### mask', () => {
+            expect(ApplicationUtils.formatMask('123456', '##.####')).toBe('12.3456')
+            expect(ApplicationUtils.formatMask('ABCD12', '##.####')).toBe('AB.CD12')
+        })
+
+        it('should format data according to ### ## mask', () => {
+            expect(ApplicationUtils.formatMask('12345', '### ##')).toBe('123 45')
+            expect(ApplicationUtils.formatMask('ABCDE', '### ##')).toBe('ABC DE')
+        })
+
+        it('should format data according to ###### mask', () => {
+            expect(ApplicationUtils.formatMask('123456', '######')).toBe('123456')
+            expect(ApplicationUtils.formatMask('ABCDEF', '######')).toBe('ABCDEF')
+        })
+
+        it('should format data according to ##### mask', () => {
+            expect(ApplicationUtils.formatMask('12345', '#####')).toBe('12345')
+            expect(ApplicationUtils.formatMask('ABCDE', '#####')).toBe('ABCDE')
+        })
+
+        it('should format data according to ##-#### mask', () => {
+            expect(ApplicationUtils.formatMask('123456', '##-####')).toBe('12-3456')
+            expect(ApplicationUtils.formatMask('ABCDEF', '##-####')).toBe('AB-CDEF')
+            expect(ApplicationUtils.formatMask('CD34567', '##-####')).toBe('CD-34567')
+        })
+
+        it('should format data according to ##-##-## mask', () => {
+            expect(ApplicationUtils.formatMask('123456', '##-##-##')).toBe('12-34-56')
+            expect(ApplicationUtils.formatMask('ABCDEF', '##-##-##')).toBe('AB-CD-EF')
+        })
+
+        it('should handle empty input', () => {
+            expect(ApplicationUtils.formatMask('', '##-###')).toBe('')
+        })
+
+        it('should handle empty mask', () => {
+            expect(ApplicationUtils.formatMask('12345', '')).toBe('12345')
+            expect(ApplicationUtils.formatMask('ABCDE', '')).toBe('ABCDE')
+        })
+
+        it('should handle special characters in input', () => {
+            expect(ApplicationUtils.formatMask('@#$%^', '##-###')).toBe('@#-$%^')
+            expect(ApplicationUtils.formatMask('!@#$%', '### ##')).toBe('!@# $%')
+        })
+
+        it('should handle input shorter than mask', () => {
+            expect(ApplicationUtils.formatMask('123', '##-###')).toBe('12-3')
+            expect(ApplicationUtils.formatMask('ABC', '##-###')).toBe('AB-C')
+        })
+
+        it('should handle input longer than mask', () => {
+            expect(ApplicationUtils.formatMask('1234567890', '##-###')).toBe('12-34567890')
+            expect(ApplicationUtils.formatMask('ABCDEFGHIJ', '### ##')).toBe('ABC DEFGHIJ')
+        })
+    })
+
+    describe('getServiceName', () => {
+        beforeEach(() => {
+            vi.resetAllMocks()
+        })
+
+        it('should extract name from package.json and convert to PascalCase', () => {
+            const mockPackageJson = JSON.stringify({ name: 'test-package' })
+
+            vi.mocked(path.resolve).mockReturnValue('/path/to/package.json')
+            vi.mocked(fs.readFileSync).mockReturnValue(mockPackageJson)
+
+            const result = ApplicationUtils.getServiceName()
+
+            expect(result).toBe('TestPackage')
+            expect(path.resolve).toHaveBeenCalledWith(expect.any(String), 'package.json')
+            expect(fs.readFileSync).toHaveBeenCalledWith('/path/to/package.json', 'utf8')
+        })
+
+        it('should handle scoped package names', () => {
+            const mockPackageJson = JSON.stringify({ name: '@scope/test-package' })
+
+            vi.mocked(path.resolve).mockReturnValue('/path/to/package.json')
+            vi.mocked(fs.readFileSync).mockReturnValue(mockPackageJson)
+
+            const result = ApplicationUtils.getServiceName()
+
+            expect(result).toBe('TestPackage')
+        })
+
+        it('should return empty string if name field is missing', () => {
+            const mockPackageJson = JSON.stringify({})
+
+            vi.mocked(path.resolve).mockReturnValue('/path/to/package.json')
+            vi.mocked(fs.readFileSync).mockReturnValue(mockPackageJson)
+
+            const result = ApplicationUtils.getServiceName()
+
+            expect(result).toBe('')
+        })
+    })
+
+    describe('getServiceVersion', () => {
+        it('should return the version of the service', () => {
+            const mockPackageJson = JSON.stringify({ version: '1.0.0' })
+
+            vi.mocked(path.resolve).mockReturnValue('/path/to/package.json')
+            vi.mocked(fs.readFileSync).mockReturnValue(mockPackageJson)
+
+            const result = ApplicationUtils.getServiceVersion()
+
+            expect(result).toBe('1.0.0')
+        })
+
+        it('should return an empty string if the version is not found', () => {
+            const mockPackageJson = JSON.stringify({})
+
+            vi.mocked(path.resolve).mockReturnValue('/path/to/package.json')
+            vi.mocked(fs.readFileSync).mockReturnValue(mockPackageJson)
+
+            const result = ApplicationUtils.getServiceVersion()
+
+            expect(result).toBe('')
+        })
+    })
+
+    describe('memoize', () => {
+        it('should memoize a function', async () => {
+            const spy = vi.fn().mockResolvedValueOnce(10)
+            const memoized = ApplicationUtils.memoize(async () => (await delay(10), spy()), DurationMs.Hour)
+
+            const [result1, result2, result3] = await Promise.all([memoized(), memoized(), memoized()])
+            const result4 = await memoized()
+
+            expect(spy).toHaveBeenCalledTimes(1)
+            expect([result1, result2, result3, result4]).toEqual([10, 10, 10, 10])
+        })
+
+        it('should memoize a function with different arguments', async () => {
+            const spy = vi.fn().mockResolvedValueOnce(10).mockResolvedValueOnce(10)
+            const memoized = ApplicationUtils.memoize(async (arg: number) => (await delay(10), spy(arg)), DurationMs.Hour)
+
+            const [result1, result2, result3] = await Promise.all([memoized(1), memoized(2), memoized(1)])
+            const result4 = await memoized(2)
+
+            expect(spy).toHaveBeenCalledTimes(2)
+            expect([result1, result2, result3, result4]).toEqual([10, 10, 10, 10])
+        })
+
+        it('should not cache an error', async () => {
+            const spy = vi.fn().mockRejectedValueOnce(new Error('test')).mockResolvedValueOnce(10)
+            const memoized = ApplicationUtils.memoize(async () => (await delay(10), spy()), DurationMs.Hour)
+
+            await expect(memoized()).rejects.toThrow('test')
+            const result = await memoized()
+
+            expect(spy).toHaveBeenCalledTimes(2)
+            expect(result).toBe(10)
+        })
+
+        it('should cache forever by default', async () => {
+            const spy = vi.fn().mockResolvedValueOnce(10)
+            const memoized = ApplicationUtils.memoize(async () => (await delay(10), spy()))
+
+            const result1 = await memoized()
+            const result2 = await memoized()
+
+            expect(spy).toHaveBeenCalledTimes(1)
+            expect([result1, result2]).toEqual([10, 10])
+        })
+    })
+
+    describe('encodeDecodeObjectValue', () => {
+        const originalData = {
+            title: 'Bank Reports',
+            errors: [
+                {
+                    type: 'stringEmpty',
+                    message: "The 'params.reports[0].ps' field must not be empty.",
+                    field: 'params.reports[0].ps',
+                    actual: '',
+                    date: new Date('2025-01-01T00:00:00.000Z'),
+                },
+                {
+                    type: 'stringEnum',
+                    message: "The 'params.reports[0].ps' field does not match any of the allowed values.",
+                    field: 'params.reports[0].ps',
+                    expected: 'Visa, MasterCard, Простір',
+                    actual: '',
+                },
+            ],
+            processCode: 1013,
+            code: 422,
+        }
+
+        describe('encodeValuesWithIterator', () => {
+            it('should encode string values in a simple object', () => {
+                const result = ApplicationUtils.encodeValuesWithIterator({ foo: 'bar' })
+
+                expect(result).toEqual({ foo: 'bar' })
+            })
+
+            it('should encode string value', () => {
+                const result = ApplicationUtils.encodeValuesWithIterator('bar')
+
+                expect(result).toEqual('bar')
+            })
+
+            it('should encode string values in complex nested object', () => {
+                const result = ApplicationUtils.encodeValuesWithIterator(originalData) as typeof originalData
+
+                expect(result.title).toBe('Bank%20Reports')
+                expect(result.errors[0].type).toBe('stringEmpty')
+                expect(result.errors[0].message).toBe("The%20'params.reports%5B0%5D.ps'%20field%20must%20not%20be%20empty.")
+                expect(result.errors[0].field).toBe('params.reports%5B0%5D.ps')
+                expect(result.errors[0].actual).toBe('')
+                expect(result.errors[1].expected).toBe('Visa%2C%20MasterCard%2C%20%D0%9F%D1%80%D0%BE%D1%81%D1%82%D1%96%D1%80')
+
+                expect(result.processCode).toBe(1013)
+                expect(result.code).toBe(422)
+            })
+
+            it('should not modify the original object', () => {
+                const originalCopy = structuredClone(originalData)
+
+                ApplicationUtils.encodeValuesWithIterator(originalData)
+                expect(originalData).toEqual(originalCopy)
+            })
+        })
+
+        describe('decodeValuesWithIterator', () => {
+            it('should decode string values in a simple object', () => {
+                const encoded = { foo: 'bar%20test' }
+                const result = ApplicationUtils.decodeValuesWithIterator(encoded)
+
+                expect(result).toEqual({ foo: 'bar test' })
+            })
+
+            it('should decode string value', () => {
+                const encoded = 'bar%20test'
+                const result = ApplicationUtils.decodeValuesWithIterator(encoded)
+
+                expect(result).toEqual('bar test')
+            })
+
+            it('should decode string values in complex nested object', () => {
+                const encodedData = ApplicationUtils.encodeValuesWithIterator(originalData)
+                const result = ApplicationUtils.decodeValuesWithIterator(encodedData) as typeof originalData
+
+                expect(result).toEqual(originalData)
+            })
+
+            it('should not modify the original object', () => {
+                const encodedData = ApplicationUtils.encodeValuesWithIterator(originalData)
+                const originalCopy = structuredClone(encodedData) as typeof originalData
+
+                ApplicationUtils.decodeValuesWithIterator(encodedData)
+                expect(encodedData).toEqual(originalCopy)
+            })
+        })
+
+        describe('removeUnderscoreFields', () => {
+            it('should remove _ from object', () => {
+                const obj = { foo: 'bar', _foo: 'foo', arr: [{ field: 'field', _field: 'field' }] }
+                const result = ApplicationUtils.removeUnderscoreFields(obj)
+
+                expect(result).toEqual({ foo: 'bar', arr: [{ field: 'field' }] })
+            })
         })
     })
 })

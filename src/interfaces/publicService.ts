@@ -12,4 +12,5 @@ export interface InputPhoneCodeOrgParams {
     codeValueId?: string
     codeIds?: string[]
     hint?: string
+    codeValueIsEditable?: boolean
 }

@@ -44,18 +44,53 @@ describe('Guards', () => {
     })
 
     describe('sessions', () => {
-        it('isUserSession should return true for User session', () => {
-            const session = testKit.session.getUserSession()
+        describe('isUserSession', () => {
+            it('should return true for User session', () => {
+                const session = testKit.session.getUserSession()
 
-            const result = Guards.isUserSession(session)
+                const result = Guards.isUserSession(session)
 
-            expect(result).toBeTruthy()
+                expect(result).toBeTruthy()
+            })
+            it('should return false for undefined', () => {
+                const session = undefined
+                const result = Guards.isUserSession(session)
+
+                expect(result).toBeFalsy()
+            })
+
+            it('should return false for EResident session', () => {
+                const session = testKit.session.getEResidentSession()
+
+                const result = Guards.isUserSession(session)
+
+                expect(result).toBeFalsy()
+            })
         })
-        it('isUserSession should return false for undefined', () => {
-            const session = undefined
-            const result = Guards.isUserSession(session)
 
-            expect(result).toBeFalsy()
+        describe('isEResidentSession', () => {
+            it('should return true for EResident session', () => {
+                const session = testKit.session.getEResidentSession()
+
+                const result = Guards.isEResidentSession(session)
+
+                expect(result).toBeTruthy()
+            })
+
+            it('should return false for undefined', () => {
+                const session = undefined
+                const result = Guards.isEResidentSession(session)
+
+                expect(result).toBeFalsy()
+            })
+
+            it('should return false for User session', () => {
+                const session = testKit.session.getUserSession()
+
+                const result = Guards.isEResidentSession(session)
+
+                expect(result).toBeFalsy()
+            })
         })
 
         it('isAcquirerSession should return true for Acquirer session', () => {
@@ -84,6 +119,53 @@ describe('Guards', () => {
             const result = Guards.isServiceEntranceSession(session)
 
             expect(result).toBeFalsy()
+        })
+
+        describe('isUser', () => {
+            it('should return true for User', () => {
+                const user = testKit.session.getUserSession().user
+
+                const result = Guards.isUser(user)
+
+                expect(result).toBeTruthy()
+            })
+
+            it('should return false for undefined', () => {
+                const user = undefined
+                const result = Guards.isUser(user)
+
+                expect(result).toBeFalsy()
+            })
+
+            it('should return false for EResident', () => {
+                const user = testKit.session.getEResidentSession().user
+                const result = Guards.isUser(user)
+
+                expect(result).toBeFalsy()
+            })
+        })
+
+        describe('isEResident', () => {
+            it('should return true for EResident', () => {
+                const user = testKit.session.getEResidentSession().user
+                const result = Guards.isEResident(user)
+
+                expect(result).toBeTruthy()
+            })
+
+            it('should return false for undefined', () => {
+                const user = undefined
+                const result = Guards.isEResident(user)
+
+                expect(result).toBeFalsy()
+            })
+
+            it('should return false for User', () => {
+                const user = testKit.session.getUserSession().user
+                const result = Guards.isEResident(user)
+
+                expect(result).toBeFalsy()
+            })
         })
     })
 

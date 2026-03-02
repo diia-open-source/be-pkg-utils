@@ -4,13 +4,18 @@ import { ApiError } from '@diia-inhouse/errors'
 import {
     AcquirerSession,
     ActionSession,
+    AppUser,
+    EResidentSession,
+    EResidentTokenData,
     OnBeforeApplicationShutdown,
     OnDestroy,
     OnHealthCheck,
     OnInit,
     OnRegistrationsFinished,
     ServiceEntranceSession,
+    SessionType,
     UserSession,
+    UserTokenData,
 } from '@diia-inhouse/types'
 
 export const Guards = {
@@ -27,11 +32,39 @@ export const Guards = {
             return false
         }
 
+        if (session.sessionType !== SessionType.User) {
+            return false
+        }
+
         return (session as UserSession).user !== undefined
+    },
+
+    isUser(user: AppUser | undefined): user is UserTokenData {
+        return user !== undefined && user.sessionType === SessionType.User
+    },
+
+    isEResidentSession(session: ActionSession | undefined): session is EResidentSession {
+        if (!session) {
+            return false
+        }
+
+        if (session.sessionType !== SessionType.EResident) {
+            return false
+        }
+
+        return (session as EResidentSession).user !== undefined
+    },
+
+    isEResident(user: AppUser | undefined): user is EResidentTokenData {
+        return user !== undefined && user.sessionType === SessionType.EResident
     },
 
     isAcquirerSession(session: ActionSession | undefined): session is AcquirerSession {
         if (!session) {
+            return false
+        }
+
+        if (session.sessionType !== SessionType.Acquirer) {
             return false
         }
 
@@ -40,6 +73,10 @@ export const Guards = {
 
     isServiceEntranceSession(session: ActionSession | undefined): session is ServiceEntranceSession {
         if (!session) {
+            return false
+        }
+
+        if (session.sessionType !== SessionType.ServiceEntrance) {
             return false
         }
 

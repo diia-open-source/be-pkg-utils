@@ -1,4 +1,3 @@
-/* eslint-disable regexp/prefer-character-class */
 class Metaphone {
     process(word: string): string {
         let normalizedValue = word.toUpperCase()
