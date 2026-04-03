@@ -1,6 +1,6 @@
 {
     "name": "@diia-inhouse/utils",
-    "version": "5.3.3",
+    "version": "5.3.4",
     "description": "Generic utils",
     "main": "dist/index.js",
     "types": "dist/types/index.d.ts",
@@ -32,7 +32,7 @@
         "compare-versions": "6.1.1",
         "design-system": "2.5.0",
         "fast-levenshtein": "3.0.0",
-        "lodash": "4.17.23",
+        "lodash": "4.18.1",
         "luxon": "3.7.2",
         "map-age-cleaner": "0.2.0",
         "moment": "2.30.1",
