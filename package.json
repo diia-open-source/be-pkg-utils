@@ -1,6 +1,6 @@
 {
     "name": "@diia-inhouse/utils",
-    "version": "5.3.7",
+    "version": "5.3.8",
     "description": "Generic utils",
     "main": "dist/index.js",
     "types": "dist/types/index.d.ts",
@@ -45,11 +45,11 @@
     },
     "devDependencies": {
         "@diia-inhouse/configs": "6.1.1",
-        "@diia-inhouse/errors": "1.18.9",
+        "@diia-inhouse/errors": "1.18.10",
         "@diia-inhouse/eslint-config": "8.8.0",
         "@diia-inhouse/test": "7.3.11",
         "@diia-inhouse/types": "11.7.0",
-        "@diia-inhouse/validators": "1.28.13",
+        "@diia-inhouse/validators": "1.28.14",
         "@slack/types": "2.20.0",
         "@types/fast-levenshtein": "0.0.4",
         "@types/lodash": "4.17.24",
