@@ -1,5 +1,6 @@
 import { GrpcStatusCode, HttpStatusCode } from '@diia-inhouse/types'
 
+// oxlint-disable-next-line typescript/no-extraneous-class
 export class NetworkUtils {
     private static readonly grpcStatusCodes = Object.values(GrpcStatusCode)
 

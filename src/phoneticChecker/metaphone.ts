@@ -39,4 +39,4 @@ class Metaphone {
     }
 }
 
-export const metaphone = new Metaphone()
+export const metaphone: Metaphone = new Metaphone()

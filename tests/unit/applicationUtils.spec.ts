@@ -1121,8 +1121,12 @@ describe('ApplicationUtils', () => {
 
     describe('memoize', () => {
         it('should memoize a function', async () => {
-            const spy = vi.fn().mockResolvedValueOnce(10)
-            const memoized = ApplicationUtils.memoize(async () => (await delay(10), spy()), DurationMs.Hour)
+            const spy = vi.fn<() => Promise<number>>().mockResolvedValueOnce(10)
+            const memoized = ApplicationUtils.memoize(async () => {
+                await delay(10)
+
+                return await spy()
+            }, DurationMs.Hour)
 
             const [result1, result2, result3] = await Promise.all([memoized(), memoized(), memoized()])
             const result4 = await memoized()
@@ -1132,8 +1136,14 @@ describe('ApplicationUtils', () => {
         })
 
         it('should memoize a function with different arguments', async () => {
-            const spy = vi.fn().mockResolvedValueOnce(10).mockResolvedValueOnce(10)
-            const memoized = ApplicationUtils.memoize(async (arg: number) => (await delay(10), spy(arg)), DurationMs.Hour)
+            const spy = vi.fn<(arg: number) => Promise<number>>()
+
+            spy.mockResolvedValueOnce(10).mockResolvedValueOnce(10)
+            const memoized = ApplicationUtils.memoize(async (arg: number) => {
+                await delay(10)
+
+                return await spy(arg)
+            }, DurationMs.Hour)
 
             const [result1, result2, result3] = await Promise.all([memoized(1), memoized(2), memoized(1)])
             const result4 = await memoized(2)
@@ -1143,8 +1153,14 @@ describe('ApplicationUtils', () => {
         })
 
         it('should not cache an error', async () => {
-            const spy = vi.fn().mockRejectedValueOnce(new Error('test')).mockResolvedValueOnce(10)
-            const memoized = ApplicationUtils.memoize(async () => (await delay(10), spy()), DurationMs.Hour)
+            const spy = vi.fn<() => Promise<number>>()
+
+            spy.mockRejectedValueOnce(new Error('test')).mockResolvedValueOnce(10)
+            const memoized = ApplicationUtils.memoize(async () => {
+                await delay(10)
+
+                return await spy()
+            }, DurationMs.Hour)
 
             await expect(memoized()).rejects.toThrow('test')
             const result = await memoized()
@@ -1154,8 +1170,12 @@ describe('ApplicationUtils', () => {
         })
 
         it('should cache forever by default', async () => {
-            const spy = vi.fn().mockResolvedValueOnce(10)
-            const memoized = ApplicationUtils.memoize(async () => (await delay(10), spy()))
+            const spy = vi.fn<() => Promise<number>>().mockResolvedValueOnce(10)
+            const memoized = ApplicationUtils.memoize(async () => {
+                await delay(10)
+
+                return await spy()
+            })
 
             const result1 = await memoized()
             const result2 = await memoized()
@@ -1251,15 +1271,6 @@ describe('ApplicationUtils', () => {
 
                 ApplicationUtils.decodeValuesWithIterator(encodedData)
                 expect(encodedData).toEqual(originalCopy)
-            })
-        })
-
-        describe('removeUnderscoreFields', () => {
-            it('should remove _ from object', () => {
-                const obj = { foo: 'bar', _foo: 'foo', arr: [{ field: 'field', _field: 'field' }] }
-                const result = ApplicationUtils.removeUnderscoreFields(obj)
-
-                expect(result).toEqual({ foo: 'bar', arr: [{ field: 'field' }] })
             })
         })
     })

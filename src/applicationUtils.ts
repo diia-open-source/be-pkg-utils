@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 import { compare } from 'compare-versions'
-import { camelCase, cloneDeep, kebabCase, startCase } from 'lodash'
+import lodash from 'lodash'
 import { DateTime, ToRelativeUnit } from 'luxon'
 import mapAgeCleaner from 'map-age-cleaner'
 import { PackageJson } from 'type-fest'
@@ -25,9 +25,13 @@ import {
     WithAppVersions,
 } from '@diia-inhouse/types'
 
-import { ProcessObjectCallback } from './interfaces/applicationUtils'
-import { OriginError } from './interfaces/error'
+import { ProcessObjectCallback } from './interfaces/applicationUtils.js'
+import { OriginError } from './interfaces/error.js'
 
+// oxlint-disable-next-line typescript/unbound-method
+const { camelCase, cloneDeep, kebabCase, startCase } = lodash
+
+// oxlint-disable-next-line typescript/no-extraneous-class
 export class ApplicationUtils {
     private static documentTypeToCamelCaseExceptions: Record<string, string> = {
         ['student-id-card']: 'studentCard',
@@ -107,7 +111,7 @@ export class ApplicationUtils {
 
         const ITN_POLY = [-1, 5, 7, 9, 4, 6, 10, 5, 7]
 
-        const digits = [...itn].map(Number)
+        const digits = Array.from(itn, Number)
         const checksum = ITN_POLY.reduce((a, x, i) => a + x * digits[i], 0)
         const controlDigit = (checksum - 11 * Math.floor(checksum / 11)) % 10
         const last = digits.at(-1)
@@ -278,7 +282,7 @@ export class ApplicationUtils {
             return cb(this.toApiError(err))
         }
 
-        const message = `Unexpected error caused: ${err}`
+        const message = `Unexpected error caused: ${String(err)}`
         const wrappedError = new Error(message)
 
         return cb(this.toApiError(wrappedError))
@@ -317,7 +321,7 @@ export class ApplicationUtils {
             default: {
                 const unhandledType: never = sessionType
 
-                throw new TypeError(`Unhandled sessionType: ${unhandledType}`)
+                throw new TypeError(`Unhandled sessionType: ${String(unhandledType)}`)
             }
         }
     }
@@ -671,7 +675,8 @@ export class ApplicationUtils {
      * @param ttl - The time to live for the cached value in milliseconds.
      * @returns The memoized function.
      */
-    static memoize<T extends (...args: Parameters<T>) => ReturnType<T>>(fn: T, ttl = Infinity): T {
+    // oxlint-disable-next-line typescript/no-inferrable-types -- explicit type required by isolatedDeclarations
+    static memoize<T extends (...args: Parameters<T>) => ReturnType<T>>(fn: T, ttl: number = Infinity): T {
         const promiseCache = new Map<string, ReturnType<T>>()
         const cache = new Map<string, { data: ReturnType<T> | Awaited<ReturnType<T>>; maxAge: number }>()
 
@@ -693,6 +698,7 @@ export class ApplicationUtils {
                 const promise = fn(...args)
 
                 promiseCache.set(key, promise)
+                // oxlint-disable-next-line typescript/await-thenable -- T may return a Promise
                 const result = await promise
 
                 cache.set(key, { data: result, maxAge: Date.now() + ttl })
@@ -742,26 +748,6 @@ export class ApplicationUtils {
         return this.processValues(data, decodeURIComponent)
     }
 
-    static removeUnderscoreFields<T>(value: T): T {
-        if (Array.isArray(value)) {
-            return value.map((item) => this.removeUnderscoreFields(item)) as T
-        }
-
-        if (typeof value === 'object' && value !== null) {
-            const objectField: Record<string, unknown> = {}
-            for (const key in value) {
-                if (!key.startsWith('_')) {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    objectField[key] = this.removeUnderscoreFields((value as any)[key])
-                }
-            }
-
-            return objectField as T
-        }
-
-        return value
-    }
-
     private static mod97(string: string): number {
         let checksum: string | number = string.slice(0, 2)
         let fragment: string
@@ -787,7 +773,6 @@ export class ApplicationUtils {
     private static getPackageJson(): PackageJson {
         const packageJsonPath = path.resolve(process.cwd(), 'package.json')
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         return JSON.parse(fs.readFileSync(packageJsonPath, 'utf8')) // nosemgrep: eslint.detect-non-literal-fs-filename
     }
 

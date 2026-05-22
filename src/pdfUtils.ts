@@ -1,4 +1,4 @@
-import { ApplicationUtils } from './applicationUtils'
+import { ApplicationUtils } from './applicationUtils.js'
 
 export const PdfUtils = {
     getPdfFileName(name: string, id: string, requestDateTime?: string): string {

@@ -27,7 +27,6 @@ describe('SlackFormattingUtils', () => {
         })
 
         it('should handle undefined value with red circle by default', () => {
-            // eslint-disable-next-line unicorn/no-useless-undefined
             const result = utils.getValue('Test', undefined)
 
             expect(result).toEqual([

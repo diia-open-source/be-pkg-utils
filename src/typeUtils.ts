@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* oxlint-disable typescript/no-explicit-any */
 export const TypeUtils = {
     isObject(value: any): boolean {
         return value && typeof value === 'object' && value.constructor === Object

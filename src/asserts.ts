@@ -1,7 +1,7 @@
 import { BadRequestError, UnauthorizedError } from '@diia-inhouse/errors'
 import { TokenData, VerifiedBaseTokenData } from '@diia-inhouse/types'
 
-import { AssertsContainer } from './interfaces/asserts'
+import { AssertsContainer } from './interfaces/asserts.js'
 
 export const Asserts: AssertsContainer = {
     isRefreshTokenExists(tokenData: TokenData): asserts tokenData is VerifiedBaseTokenData<TokenData> {

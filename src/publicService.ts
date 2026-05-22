@@ -9,8 +9,8 @@ import {
 import { UserTokenData } from '@diia-inhouse/types'
 import { emailRuValidation, emailValidation } from '@diia-inhouse/validators'
 
-import { phoneCodes } from './dictionaries/phoneCodes'
-import { AuthProviderName, InputPhoneCodeOrgParams } from './interfaces/publicService'
+import { phoneCodes } from './dictionaries/phoneCodes.js'
+import { AuthProviderName, InputPhoneCodeOrgParams } from './interfaces/publicService.js'
 
 export const PublicServiceUtils = {
     getContacts(user: UserTokenData): ContactsResponse {

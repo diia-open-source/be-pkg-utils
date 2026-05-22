@@ -1,12 +1,15 @@
 {
     "extends": "@diia-inhouse/configs/tsconfig",
     "compilerOptions": {
-        "baseUrl": "../",
         "noEmit": true,
         "strict": true,
         "module": "ESNext",
         "moduleResolution": "Bundler",
-        "isolatedModules": true
+        "isolatedModules": true,
+        "rootDir": "../",
+        "paths": {
+            "tests/*": ["./*"]
+        }
     },
-    "include": ["./**/*", "../vitest.config.mts"]
+    "include": ["./**/*", "../vitest.config.mts", "../tsdown.config.ts"]
 }

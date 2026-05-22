@@ -1,11 +1,11 @@
 import flevenshtein from 'fast-levenshtein'
 
-import { metaphone } from './metaphone'
+import { metaphone } from './metaphone.js'
 
 class PhoneticChecker {
     private equalityCoefficientThreshold = 0.75
 
-    arePhoneticallySimilar(etalonValue: string, slaveValue: string, threshold = this.equalityCoefficientThreshold): boolean {
+    arePhoneticallySimilar(etalonValue: string, slaveValue: string, threshold: number = this.equalityCoefficientThreshold): boolean {
         const equalityCoefficient = this.getEqualityCoefficient(etalonValue, slaveValue)
 
         return equalityCoefficient >= threshold
@@ -23,4 +23,4 @@ class PhoneticChecker {
     }
 }
 
-export const phoneticChecker = new PhoneticChecker()
+export const phoneticChecker: PhoneticChecker = new PhoneticChecker()

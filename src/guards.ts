@@ -1,4 +1,4 @@
-import { isFunction } from 'lodash'
+import lodash from 'lodash'
 
 import { ApiError } from '@diia-inhouse/errors'
 import {
@@ -18,6 +18,10 @@ import {
     UserTokenData,
 } from '@diia-inhouse/types'
 
+// oxlint-disable-next-line typescript/unbound-method
+const { isFunction } = lodash
+
+/* oxlint-disable typescript/unbound-method */
 export const Guards = {
     isError(value: unknown): value is Error {
         return value instanceof Error

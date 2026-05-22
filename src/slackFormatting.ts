@@ -1,6 +1,6 @@
 import type { RichTextElement, RichTextEmoji } from '@slack/types'
 
-import { GetListValueOptions } from './interfaces/slack'
+import { GetListValueOptions } from './interfaces/slack.js'
 
 export class SlackFormattingUtils {
     readonly greenCircleEmoji: RichTextEmoji = { type: 'emoji', name: 'large_green_circle' }

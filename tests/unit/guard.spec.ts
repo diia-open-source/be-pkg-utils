@@ -172,7 +172,7 @@ describe('Guards', () => {
     describe('hooks', () => {
         it('should return true if instance has onInit method', () => {
             const instance = {
-                onInit: vi.fn(),
+                onInit: vi.fn<() => void>(),
             }
             const result = Guards.hasOnInitHook(instance)
 
@@ -186,7 +186,7 @@ describe('Guards', () => {
         })
         it('should return true if instance has onHealthCheckHook method', () => {
             const instance = {
-                onHealthCheck: vi.fn(),
+                onHealthCheck: vi.fn<() => void>(),
             }
             const result = Guards.hasOnHealthCheckHook(instance)
 
@@ -201,7 +201,7 @@ describe('Guards', () => {
 
         it('should return true if instance has onDestroyHook method', () => {
             const instance = {
-                onDestroy: vi.fn(),
+                onDestroy: vi.fn<() => void>(),
             }
             const result = Guards.hasOnDestroyHook(instance)
 
@@ -216,7 +216,7 @@ describe('Guards', () => {
 
         it('should return true if instance has onRegistrationsFinishedHook method', () => {
             const instance = {
-                onRegistrationsFinished: vi.fn(),
+                onRegistrationsFinished: vi.fn<() => void>(),
             }
             const result = Guards.hasOnRegistrationsFinishedHook(instance)
 

@@ -1,5 +1,6 @@
-import { ApplicationUtils } from './applicationUtils'
+import { ApplicationUtils } from './applicationUtils.js'
 
+// oxlint-disable-next-line typescript/no-extraneous-class
 export class PaymentUtils {
     private static readonly config = {
         defaultMinCommission: 1,

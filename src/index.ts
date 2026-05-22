@@ -1,55 +1,55 @@
-import { AddressUtils } from './address'
-import { ApplicationUtils } from './applicationUtils'
-import { Asserts } from './asserts'
-import { Guards } from './guards'
-import { IntegrationUtils } from './integration'
-import { NetworkUtils } from './network'
-import { PaymentUtils } from './payment'
-import { PdfUtils } from './pdfUtils'
-import { PublicServiceUtils } from './publicService'
-import { RandomUtils } from './random'
-import { SlackFormattingUtils } from './slackFormatting'
-import { TypeUtils } from './typeUtils'
+import { AddressUtils } from './address.js'
+import { ApplicationUtils } from './applicationUtils.js'
+import { Asserts } from './asserts.js'
+import { Guards } from './guards.js'
+import { IntegrationUtils } from './integration.js'
+import { NetworkUtils } from './network.js'
+import { PaymentUtils } from './payment.js'
+import { PdfUtils } from './pdfUtils.js'
+import { PublicServiceUtils } from './publicService.js'
+import { RandomUtils } from './random.js'
+import { SlackFormattingUtils } from './slackFormatting.js'
+import { TypeUtils } from './typeUtils.js'
 
-const asserts = Asserts
-const guards = Guards
-const utils = ApplicationUtils
-const pdfUtils = PdfUtils
+const asserts: typeof Asserts = Asserts
+const guards: typeof Guards = Guards
+const utils: typeof ApplicationUtils = ApplicationUtils
+const pdfUtils: typeof PdfUtils = PdfUtils
 
 export { asserts, guards, utils, pdfUtils }
 
-export { TypeUtils } from './typeUtils'
+export { TypeUtils } from './typeUtils.js'
 
-export { PaymentUtils } from './payment'
+export { PaymentUtils } from './payment.js'
 
-export { PublicServiceUtils } from './publicService'
+export { PublicServiceUtils } from './publicService.js'
 
-export { phoneticChecker } from './phoneticChecker'
+export { phoneticChecker } from './phoneticChecker/index.js'
 
-export { NetworkUtils } from './network'
+export { NetworkUtils } from './network.js'
 
-export { IntegrationUtils } from './integration'
+export { IntegrationUtils } from './integration.js'
 
-export { RandomUtils } from './random'
+export { RandomUtils } from './random.js'
 
-export { AddressUtils } from './address'
+export { AddressUtils } from './address.js'
 
-export * from './session'
+export * from './session.js'
 
-export * from './slackFormatting'
+export * from './slackFormatting.js'
 
 export class Utils {
-    address = AddressUtils
-    application = ApplicationUtils
-    network = NetworkUtils
-    payment = PaymentUtils
-    slackFormatting = SlackFormattingUtils
+    address: typeof AddressUtils = AddressUtils
+    application: typeof ApplicationUtils = ApplicationUtils
+    network: typeof NetworkUtils = NetworkUtils
+    payment: typeof PaymentUtils = PaymentUtils
+    slackFormatting: typeof SlackFormattingUtils = SlackFormattingUtils
 
-    asserts = Asserts
-    guards = Guards
-    integration = IntegrationUtils
-    pdf = PdfUtils
-    publicService = PublicServiceUtils
-    random = RandomUtils
-    type = TypeUtils
+    asserts: typeof Asserts = Asserts
+    guards: typeof Guards = Guards
+    integration: typeof IntegrationUtils = IntegrationUtils
+    pdf: typeof PdfUtils = PdfUtils
+    publicService: typeof PublicServiceUtils = PublicServiceUtils
+    random: typeof RandomUtils = RandomUtils
+    type: typeof TypeUtils = TypeUtils
 }
