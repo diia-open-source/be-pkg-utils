@@ -1,6 +1,6 @@
 {
     "name": "@diia-inhouse/utils",
-    "version": "6.0.9",
+    "version": "6.0.10",
     "type": "module",
     "description": "Generic utils",
     "main": "dist/index.js",
@@ -58,11 +58,11 @@
     },
     "devDependencies": {
         "@diia-inhouse/configs": "7.0.0",
-        "@diia-inhouse/errors": "2.1.0",
+        "@diia-inhouse/errors": "2.1.1",
         "@diia-inhouse/oxc-config": "1.10.0",
         "@diia-inhouse/test": "8.2.1",
         "@diia-inhouse/types": "13.2.0",
-        "@diia-inhouse/validators": "2.2.0",
+        "@diia-inhouse/validators": "2.2.1",
         "@slack/types": "2.21.1",
         "@types/fast-levenshtein": "0.0.4",
         "@types/lodash": "4.17.24",
