@@ -852,6 +852,11 @@ describe('ApplicationUtils', () => {
                 input: 'БЕЙ',
                 expected: 'Бей',
             },
+            {
+                case: 'capitalize the first letters of the name if it has two comma separated words',
+                input: 'НЕО, ТІМОН',
+                expected: 'Нео, Тімон',
+            },
         ])('should $case', ({ input, expected }) => {
             const result = ApplicationUtils.capitalizeName(input)
 
