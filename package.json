@@ -1,6 +1,6 @@
 {
     "name": "@diia-inhouse/utils",
-    "version": "6.0.57",
+    "version": "6.0.58",
     "type": "module",
     "description": "Generic utils",
     "main": "dist/index.js",
@@ -34,7 +34,7 @@
         "find-circulars": "madge --circular --extensions ts ./"
     },
     "dependencies": {
-        "@diia-inhouse/design-system": "4.17.1",
+        "@diia-inhouse/design-system": "4.17.3",
         "@types/luxon": "3.7.1",
         "bson": "7.2.0",
         "compare-versions": "6.1.1",
@@ -58,11 +58,11 @@
     },
     "devDependencies": {
         "@diia-inhouse/configs": "7.0.1",
-        "@diia-inhouse/errors": "2.2.7",
+        "@diia-inhouse/errors": "2.2.8",
         "@diia-inhouse/oxc-config": "1.11.0",
-        "@diia-inhouse/test": "8.2.23",
-        "@diia-inhouse/types": "14.2.1",
-        "@diia-inhouse/validators": "2.2.43",
+        "@diia-inhouse/test": "8.2.24",
+        "@diia-inhouse/types": "14.2.2",
+        "@diia-inhouse/validators": "2.2.44",
         "@slack/types": "2.21.1",
         "@types/fast-levenshtein": "0.0.4",
         "@types/lodash": "4.17.24",
