@@ -1,6 +1,6 @@
 {
     "name": "@diia-inhouse/utils",
-    "version": "6.0.75",
+    "version": "6.0.76",
     "type": "module",
     "description": "Generic utils",
     "main": "dist/index.js",
@@ -57,7 +57,7 @@
         }
     },
     "devDependencies": {
-        "@diia-inhouse/configs": "7.0.1",
+        "@diia-inhouse/configs": "7.1.0",
         "@diia-inhouse/errors": "2.2.16",
         "@diia-inhouse/oxc-config": "1.11.0",
         "@diia-inhouse/test": "8.3.2",
