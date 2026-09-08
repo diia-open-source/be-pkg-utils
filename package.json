@@ -1,6 +1,6 @@
 {
     "name": "@diia-inhouse/utils",
-    "version": "6.0.98",
+    "version": "6.1.0",
     "type": "module",
     "description": "Generic utils",
     "main": "dist/index.js",

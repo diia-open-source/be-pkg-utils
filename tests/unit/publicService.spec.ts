@@ -1,7 +1,8 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import { ContactsResponse, DSBodyItem } from '@diia-inhouse/design-system'
 import TestKit from '@diia-inhouse/test'
+import { Logger } from '@diia-inhouse/types'
 import { emailRuValidation, emailValidation, phoneNumberWithoutPlusValidation } from '@diia-inhouse/validators'
 
 import { PublicServiceUtils } from '../../src'
@@ -235,6 +236,55 @@ describe('Public service utils', () => {
             expect(() => {
                 PublicServiceUtils.extractPhoneNumber('380 123 456 789', 'ua')
             }).toThrow('Phone number must contain only digits')
+        })
+    })
+
+    describe('extractPhoneNumberSafe', () => {
+        const getLoggerMock = (): Logger => ({ warn: vi.fn<Logger['warn']>() }) as unknown as Logger
+
+        it('should extract valid phone number without logging', () => {
+            const logger = getLoggerMock()
+
+            const result = PublicServiceUtils.extractPhoneNumberSafe('+380123456789', 'ua', logger)
+
+            expect(result).toBe('123456789')
+            expect(logger.warn).not.toHaveBeenCalled()
+        })
+
+        it('should return undefined and log warning when phone number does not match the country code', () => {
+            const logger = getLoggerMock()
+
+            const result = PublicServiceUtils.extractPhoneNumberSafe('48123456789', 'ua', logger)
+
+            expect(result).toBeUndefined()
+            expect(logger.warn).toHaveBeenCalledWith('Failed to extract phone number by country code', {
+                err: new Error('Phone number must start with country code 380'),
+                phoneCodeValue: 'ua',
+            })
+        })
+
+        it('should return undefined and log warning when the country code is invalid', () => {
+            const logger = getLoggerMock()
+
+            const result = PublicServiceUtils.extractPhoneNumberSafe('380123456789', 'invalid', logger)
+
+            expect(result).toBeUndefined()
+            expect(logger.warn).toHaveBeenCalledWith('Failed to extract phone number by country code', {
+                err: new Error('Invalid country code'),
+                phoneCodeValue: 'invalid',
+            })
+        })
+
+        it('should return undefined and log warning when phone number contains non-digit characters', () => {
+            const logger = getLoggerMock()
+
+            const result = PublicServiceUtils.extractPhoneNumberSafe('380abc123456', 'ua', logger)
+
+            expect(result).toBeUndefined()
+            expect(logger.warn).toHaveBeenCalledWith('Failed to extract phone number by country code', {
+                err: new Error('Phone number must contain only digits'),
+                phoneCodeValue: 'ua',
+            })
         })
     })
 })

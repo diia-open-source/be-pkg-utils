@@ -6,7 +6,7 @@ import {
     InputTextMlc,
     TextLabelMlc,
 } from '@diia-inhouse/design-system'
-import { UserTokenData } from '@diia-inhouse/types'
+import { Logger, UserTokenData } from '@diia-inhouse/types'
 import { emailRuValidation, emailValidation } from '@diia-inhouse/validators'
 
 import { phoneCodes } from './dictionaries/phoneCodes.js'
@@ -168,5 +168,15 @@ export const PublicServiceUtils = {
         }
 
         return cleanPhoneNumber.slice(countryCode.value.length)
+    },
+
+    extractPhoneNumberSafe(phoneNumber: string, phoneCodeValue: string, logger: Logger): string | undefined {
+        try {
+            return this.extractPhoneNumber(phoneNumber, phoneCodeValue)
+        } catch (err) {
+            logger.warn('Failed to extract phone number by country code', { err, phoneCodeValue })
+
+            return undefined
+        }
     },
 }
