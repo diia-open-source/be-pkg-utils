@@ -1,8 +1,14 @@
 {
     "name": "@diia-inhouse/utils",
-    "version": "6.1.21",
-    "type": "module",
+    "version": "6.1.22",
     "description": "Generic utils",
+    "license": "SEE LICENSE IN LICENSE.md",
+    "author": "diia-team",
+    "repository": "https://github.com/diia-open-source/be-pkg-utils",
+    "files": [
+        "dist"
+    ],
+    "type": "module",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "exports": {
@@ -11,15 +17,6 @@
             "default": "./dist/index.js"
         },
         "./package.json": "./package.json"
-    },
-    "repository": "https://github.com/diia-open-source/be-pkg-utils",
-    "author": "Diia",
-    "license": "SEE LICENSE IN LICENSE.md",
-    "files": [
-        "dist"
-    ],
-    "engines": {
-        "node": ">=24"
     },
     "scripts": {
         "prebuild": "rimraf dist",
@@ -34,7 +31,7 @@
         "find-circulars": "madge --circular --extensions ts ./"
     },
     "dependencies": {
-        "@diia-inhouse/design-system": "5.22.0",
+        "@diia-inhouse/design-system": "5.25.2",
         "@types/luxon": "3.7.1",
         "bson": "7.2.0",
         "compare-versions": "6.1.1",
@@ -44,6 +41,31 @@
         "map-age-cleaner": "0.2.0",
         "moment": "2.31.0",
         "type-fest": "5.6.0"
+    },
+    "devDependencies": {
+        "@diia-inhouse/configs": "7.2.2",
+        "@diia-inhouse/errors": "2.3.22",
+        "@diia-inhouse/oxc-config": "4.0.3",
+        "@diia-inhouse/test": "8.3.38",
+        "@diia-inhouse/types": "14.5.4",
+        "@diia-inhouse/validators": "2.2.109",
+        "@slack/types": "2.21.1",
+        "@types/fast-levenshtein": "0.0.4",
+        "@types/lodash": "4.17.24",
+        "@types/node": "25.6.2",
+        "@vitest/coverage-v8": "4.1.5",
+        "@vitest/ui": "4.1.5",
+        "lockfile-lint": "5.0.0",
+        "madge": "8.0.0",
+        "oxfmt": "0.72.0",
+        "oxlint": "1.87.0",
+        "oxlint-tsgolint": "7.0.2003",
+        "protobufjs": "8.6.6",
+        "rimraf": "6.1.3",
+        "tsdown": "0.22.0",
+        "typescript": "5.9.3",
+        "vite-tsconfig-paths": "6.1.1",
+        "vitest": "4.1.5"
     },
     "peerDependencies": {
         "@diia-inhouse/errors": ">=2.0.0",
@@ -56,36 +78,14 @@
             "optional": true
         }
     },
-    "devDependencies": {
-        "@diia-inhouse/configs": "7.2.2",
-        "@diia-inhouse/errors": "2.3.14",
-        "@diia-inhouse/oxc-config": "3.1.0",
-        "@diia-inhouse/test": "8.3.32",
-        "@diia-inhouse/types": "14.4.0",
-        "@diia-inhouse/validators": "2.2.99",
-        "@slack/types": "2.21.1",
-        "@types/fast-levenshtein": "0.0.4",
-        "@types/lodash": "4.17.24",
-        "@types/node": "25.6.2",
-        "@vitest/coverage-v8": "4.1.5",
-        "@vitest/ui": "4.1.5",
-        "lockfile-lint": "5.0.0",
-        "madge": "8.0.0",
-        "oxfmt": "0.48.0",
-        "oxlint": "1.63.0",
-        "oxlint-tsgolint": "0.22.1",
-        "protobufjs": "8.6.6",
-        "rimraf": "6.1.3",
-        "tsdown": "0.22.0",
-        "typescript": "5.9.3",
-        "vite-tsconfig-paths": "6.1.1",
-        "vitest": "4.1.5"
+    "commitlint": {
+        "extends": "@diia-inhouse/configs/dist/commitlint"
     },
     "release": {
         "extends": "@diia-inhouse/configs/dist/semantic-release/package"
     },
-    "commitlint": {
-        "extends": "@diia-inhouse/configs/dist/commitlint"
+    "engines": {
+        "node": ">=24"
     },
     "madge": {
         "tsConfig": "./tsconfig.json"

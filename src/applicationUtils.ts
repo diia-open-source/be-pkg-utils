@@ -110,9 +110,13 @@ export class ApplicationUtils {
         }
 
         const ITN_POLY = [-1, 5, 7, 9, 4, 6, 10, 5, 7]
-
         const digits = Array.from(itn, Number)
-        const checksum = ITN_POLY.reduce((a, x, i) => a + x * digits[i], 0)
+
+        let checksum = 0
+        for (let i = 0; i < ITN_POLY.length; i++) {
+            checksum += ITN_POLY[i] * digits[i]
+        }
+
         const controlDigit = (checksum - 11 * Math.floor(checksum / 11)) % 10
         const last = digits.at(-1)
 
