@@ -10,5 +10,5 @@ export default defineConfig({
     clean: true,
     fixedExtension: false,
     report: false,
-    deps: { skipNodeModulesBundle: true },
+    deps: { neverBundle: true },
 })
