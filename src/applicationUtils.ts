@@ -307,9 +307,6 @@ export class ApplicationUtils {
             case SessionType.Acquirer: {
                 return { sessionType, acquirer: data }
             }
-            case SessionType.PortalUser: {
-                return { sessionType, user: data }
-            }
             case SessionType.Partner: {
                 return { sessionType, partner: data }
             }

@@ -520,7 +520,6 @@ describe('ApplicationUtils', () => {
             [SessionType.User, 'user'],
             [SessionType.EResident, 'user'],
             [SessionType.EResidentApplicant, 'user'],
-            [SessionType.PortalUser, 'user'],
             [SessionType.Acquirer, 'acquirer'],
             [SessionType.Partner, 'partner'],
             [SessionType.Temporary, 'temporary'],
