@@ -1,6 +1,6 @@
 {
     "name": "@diia-inhouse/utils",
-    "version": "6.2.13",
+    "version": "6.2.14",
     "description": "Generic utils",
     "license": "SEE LICENSE IN LICENSE.md",
     "author": "diia-team",
@@ -44,11 +44,11 @@
     },
     "devDependencies": {
         "@diia-inhouse/configs": "7.2.5",
-        "@diia-inhouse/errors": "2.3.41",
+        "@diia-inhouse/errors": "2.3.42",
         "@diia-inhouse/oxc-config": "5.0.2",
         "@diia-inhouse/test": "8.4.8",
         "@diia-inhouse/types": "14.12.3",
-        "@diia-inhouse/validators": "2.2.135",
+        "@diia-inhouse/validators": "2.2.136",
         "@slack/types": "3.2.0",
         "@types/fast-levenshtein": "0.0.4",
         "@types/lodash": "4.17.27",
