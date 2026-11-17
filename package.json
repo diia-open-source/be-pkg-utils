@@ -1,6 +1,6 @@
 {
     "name": "@diia-inhouse/utils",
-    "version": "6.2.18",
+    "version": "6.2.19",
     "description": "Generic utils",
     "license": "SEE LICENSE IN LICENSE.md",
     "author": "diia-team",
@@ -31,7 +31,7 @@
         "find-circulars": "madge --circular --extensions ts ./"
     },
     "dependencies": {
-        "@diia-inhouse/design-system": "5.32.4",
+        "@diia-inhouse/design-system": "5.33.0",
         "@types/luxon": "3.7.6",
         "bson": "7.3.3",
         "compare-versions": "6.1.1",
@@ -46,8 +46,8 @@
         "@diia-inhouse/configs": "7.2.5",
         "@diia-inhouse/errors": "2.3.44",
         "@diia-inhouse/oxc-config": "5.0.2",
-        "@diia-inhouse/test": "8.4.10",
-        "@diia-inhouse/types": "14.12.3",
+        "@diia-inhouse/test": "8.4.11",
+        "@diia-inhouse/types": "14.13.0",
         "@diia-inhouse/validators": "2.2.138",
         "@slack/types": "3.2.0",
         "@types/fast-levenshtein": "0.0.4",
