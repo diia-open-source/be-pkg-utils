@@ -1,6 +1,6 @@
 {
     "name": "@diia-inhouse/utils",
-    "version": "6.2.23",
+    "version": "6.2.24",
     "description": "Generic utils",
     "license": "SEE LICENSE IN LICENSE.md",
     "author": "diia-team",
@@ -30,7 +30,7 @@
         "test:watch": "vitest watch"
     },
     "dependencies": {
-        "@diia-inhouse/design-system": "5.33.1",
+        "@diia-inhouse/design-system": "5.33.2",
         "@types/luxon": "3.7.6",
         "bson": "7.3.3",
         "compare-versions": "6.1.1",
@@ -43,11 +43,11 @@
     },
     "devDependencies": {
         "@diia-inhouse/configs": "7.4.0",
-        "@diia-inhouse/errors": "2.3.46",
-        "@diia-inhouse/oxc-config": "6.2.0",
-        "@diia-inhouse/test": "8.4.13",
-        "@diia-inhouse/types": "14.13.1",
-        "@diia-inhouse/validators": "2.2.141",
+        "@diia-inhouse/errors": "2.3.48",
+        "@diia-inhouse/oxc-config": "6.2.1",
+        "@diia-inhouse/test": "8.4.14",
+        "@diia-inhouse/types": "14.13.3",
+        "@diia-inhouse/validators": "2.2.143",
         "@slack/types": "3.2.0",
         "@types/fast-levenshtein": "0.0.4",
         "@types/lodash": "4.17.27",
