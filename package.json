@@ -1,6 +1,6 @@
 {
     "name": "@diia-inhouse/utils",
-    "version": "6.2.25",
+    "version": "6.2.26",
     "description": "Generic utils",
     "license": "SEE LICENSE IN LICENSE.md",
     "author": "diia-team",
@@ -47,7 +47,7 @@
         "@diia-inhouse/oxc-config": "6.2.1",
         "@diia-inhouse/test": "8.4.14",
         "@diia-inhouse/types": "14.13.3",
-        "@diia-inhouse/validators": "2.2.144",
+        "@diia-inhouse/validators": "2.2.145",
         "@slack/types": "3.2.0",
         "@types/fast-levenshtein": "0.0.4",
         "@types/lodash": "4.17.27",
