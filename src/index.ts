@@ -9,6 +9,7 @@ import { PdfUtils } from './pdfUtils.js'
 import { PublicServiceUtils } from './publicService.js'
 import { RandomUtils } from './random.js'
 import { SlackFormattingUtils } from './slackFormatting.js'
+import { TransliterationUtils } from './transliteration.js'
 import { TypeUtils } from './typeUtils.js'
 
 const asserts: typeof Asserts = Asserts
@@ -34,6 +35,8 @@ export { RandomUtils } from './random.js'
 
 export { AddressUtils } from './address.js'
 
+export { TransliterationUtils } from './transliteration.js'
+
 export * from './session.js'
 
 export * from './slackFormatting.js'
@@ -51,5 +54,6 @@ export class Utils {
     pdf: typeof PdfUtils = PdfUtils
     publicService: typeof PublicServiceUtils = PublicServiceUtils
     random: typeof RandomUtils = RandomUtils
+    transliteration: typeof TransliterationUtils = TransliterationUtils
     type: typeof TypeUtils = TypeUtils
 }
